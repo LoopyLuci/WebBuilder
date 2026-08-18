@@ -1,0 +1,43 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "exactOptionalPropertyTypes": false,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@webbuilder/core": ["packages/core/src"],
+      "@webbuilder/core/*": ["packages/core/src/*"],
+      "@webbuilder/mcp-server": ["packages/mcp-server/src"],
+      "@webbuilder/mcp-server/*": ["packages/mcp-server/src/*"],
+      "@webbuilder/agents": ["packages/agents/src"],
+      "@webbuilder/agents/*": ["packages/agents/src/*"],
+      "@webbuilder/components": ["packages/components/src"],
+      "@webbuilder/components/*": ["packages/components/src/*"],
+      "@webbuilder/cli": ["packages/cli/src"],
+      "@webbuilder/cli/*": ["packages/cli/src/*"],
+      "@webbuilder/plugins": ["packages/plugins/src"],
+      "@webbuilder/plugins/*": ["packages/plugins/src/*"],
+      "@webbuilder/testing": ["packages/testing/src"],
+      "@webbuilder/testing/*": ["packages/testing/src/*"],
+      "@webbuilder/ai": ["packages/ai/src"],
+      "@webbuilder/ai/*": ["packages/ai/src/*"]
+    }
+  },
+  "include": ["packages/*/src", "apps/*/src"],
+  "exclude": ["node_modules", "dist"]
+}
