@@ -1,26 +1,50 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
+import {
+  DndContext,
+  DragOverlay,
+  useSensor,
+  useSensors,
+  PointerSensor,
+  KeyboardSensor,
+  closestCenter,
+  DragStartEvent,
+  DragEndEvent,
+  DragOverEvent,
+} from '@dnd-kit/core';
+import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { EditorProvider, useEditorContext, ToastContainer } from '@/editor';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { DraggableComponent } from '@/components/editor/DraggableComponent';
+import { SortableSection } from '@/components/editor/SortableSection';
+import { DropZone } from '@/components/editor/DropZone';
+import { showToast } from '@/editor';
 
-function EditorContent() {
-  const { state, addSection, removeSection, selectSection, undo, redo, setViewport, setZoom } = useEditorContext();
+// ─── Component Palette ─────────────────────────────────────────────────────
+
+const componentPalette = [
+  { type: 'hero', name: 'Hero Section', icon: '🖼️', category: 'Layout' },
+  { type: 'features', name: 'Features Grid', icon: '📋', category: 'Layout' },
+  { type: 'pricing', name: 'Pricing Table', icon: '💰', category: 'Layout' },
+  { type: 'cta', name: 'CTA Section', icon: '📣', category: 'Layout' },
+  { type: 'stats', name: 'Stats Grid', icon: '📊', category: 'Display' },
+  { type: 'testimonials', name: 'Testimonials', icon: '💬', category: 'Display' },
+  { type: 'footer', name: 'Footer', icon: '📄', category: 'Navigation' },
+  { type: 'navbar', name: 'Navbar', icon: '🔝', category: 'Navigation' },
+];
+
+function DragDropEditor() {
+  const { state, addSection, removeSection, updateSection, selectSection, undo, redo, setViewport, setZoom } = useEditorContext();
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [overId, setOverId] = useState<string | null>(null);
 
-  const componentPalette = [
-    { type: 'hero', name: 'Hero Section', icon: '🖼️', category: 'Layout' },
-    { type: 'features', name: 'Features Grid', icon: '📋', category: 'Layout' },
-    { type: 'pricing', name: 'Pricing Table', icon: '💰', category: 'Layout' },
-    { type: 'cta', name: 'CTA Section', icon: '📣', category: 'Layout' },
-    { type: 'stats', name: 'Stats Grid', icon: '📊', category: 'Display' },
-    { type: 'testimonials', name: 'Testimonials', icon: '💬', category: 'Display' },
-    { type: 'footer', name: 'Footer', icon: '📄', category: 'Navigation' },
-    { type: 'navbar', name: 'Navbar', icon: '🔝', category: 'Navigation' },
-  ];
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const filteredComponents = componentPalette.filter(c =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -29,139 +53,193 @@ function EditorContent() {
 
   const viewportWidth = state.viewport === 'mobile' ? 375 : state.viewport === 'tablet' ? 768 : '100%';
 
-  return (
-    <div className="h-screen flex flex-col bg-background">
-      {/* Toolbar */}
-      <div className="h-14 border-b border-border bg-background flex items-center justify-between px-4">
-        <div className="flex items-center gap-4">
-          <h1 className="text-lg font-bold">WebBuilder</h1>
-          <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-            {(['mobile', 'tablet', 'desktop'] as const).map((v) => (
-              <button
-                key={v}
-                onClick={() => setViewport(v)}
-                className={`px-3 py-1 rounded text-sm ${
-                  state.viewport === v ? 'bg-background shadow text-primary-600' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {v === 'mobile' ? '📱' : v === 'tablet' ? '📟' : '🖥️'}
-              </button>
-            ))}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button size="sm" variant="ghost" onClick={() => setZoom(state.zoom - 0.1)}>-</Button>
-            <span className="text-sm text-muted-foreground w-12 text-center">{Math.round(state.zoom * 100)}%</span>
-            <Button size="sm" variant="ghost" onClick={() => setZoom(state.zoom + 0.1)}>+</Button>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" onClick={undo} disabled={state.historyIndex === 0}>↩ Undo</Button>
-          <Button size="sm" variant="ghost" onClick={redo} disabled={state.historyIndex === state.history.length - 1}>↪ Redo</Button>
-          <Button size="sm" variant="primary">🚀 Deploy</Button>
-        </div>
-      </div>
+  const handleDragStart = useCallback((event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  }, []);
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar */}
-        <div className="w-72 border-r border-border bg-muted/30 flex flex-col">
-          <div className="flex-1 overflow-auto p-3 space-y-3">
-            <Input
-              placeholder="Search components..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            <div className="space-y-1">
-              {filteredComponents.map((comp) => (
+  const handleDragOver = useCallback((event: DragOverEvent) => {
+    const over = event.over;
+    setOverId(over ? (over.id as string) : null);
+  }, []);
+
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    setActiveId(null);
+    setOverId(null);
+
+    const { active, over } = event;
+
+    if (!over) {
+      // Dropped outside canvas — check if it's a new component from palette
+      const paletteItem = componentPalette.find(c => c.type === active.id);
+      if (paletteItem) {
+        addSection(paletteItem.type, paletteItem.name);
+        showToast('success', `${paletteItem.name} added`);
+      }
+      return;
+    }
+
+    // Reordering existing sections
+    if (active.id !== over.id) {
+      const oldIndex = state.sections.findIndex(s => s.id === active.id);
+      const newIndex = state.sections.findIndex(s => s.id === over.id);
+      if (oldIndex !== -1 && newIndex !== -1) {
+        const newSections = [...state.sections];
+        const [moved] = newSections.splice(oldIndex, 1);
+        newSections.splice(newIndex, 0, moved);
+        updateSection(moved.id, { props: moved.props }); // Trigger state update
+        showToast('info', 'Section reordered');
+      }
+    }
+  }, [state.sections, addSection, updateSection]);
+
+  const handleComponentClick = useCallback((type: string, name: string) => {
+    addSection(type, name);
+  }, [addSection]);
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
+      onDragOver={handleDragOver}
+      onDragEnd={handleDragEnd}
+    >
+      <div className="h-screen flex flex-col bg-background">
+        {/* Toolbar */}
+        <div className="h-14 border-b border-border bg-background flex items-center justify-between px-4 shrink-0">
+          <div className="flex items-center gap-4">
+            <h1 className="text-lg font-bold">WebBuilder</h1>
+            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+              {(['mobile', 'tablet', 'desktop'] as const).map((v) => (
                 <button
-                  key={comp.type}
-                  onClick={() => addSection(comp.type, comp.name)}
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-left hover:bg-background border border-transparent hover:border-border transition-all"
+                  key={v}
+                  onClick={() => setViewport(v)}
+                  className={`px-3 py-1 rounded text-sm ${
+                    state.viewport === v ? 'bg-background shadow text-primary-600' : 'text-muted-foreground hover:text-foreground'
+                  }`}
                 >
-                  <span className="text-xl">{comp.icon}</span>
-                  <div>
-                    <div className="font-medium">{comp.name}</div>
-                    <div className="text-xs text-muted-foreground">{comp.category}</div>
-                  </div>
+                  {v === 'mobile' ? '📱' : v === 'tablet' ? '📟' : '🖥️'}
                 </button>
               ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button size="sm" variant="ghost" onClick={() => setZoom(state.zoom - 0.1)}>-</Button>
+              <span className="text-sm text-muted-foreground w-12 text-center">{Math.round(state.zoom * 100)}%</span>
+              <Button size="sm" variant="ghost" onClick={() => setZoom(state.zoom + 0.1)}>+</Button>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={undo} disabled={state.historyIndex === 0}>↩ Undo</Button>
+            <Button size="sm" variant="ghost" onClick={redo} disabled={state.historyIndex === state.history.length - 1}>↪ Redo</Button>
+            <Button size="sm" variant="primary">🚀 Deploy</Button>
+          </div>
+        </div>
+
+        <div className="flex-1 flex overflow-hidden">
+          {/* Left Sidebar — Component Palette */}
+          <div className="w-72 border-r border-border bg-muted/30 flex flex-col shrink-0">
+            <div className="p-3 border-b border-border">
+              <h2 className="text-sm font-semibold mb-2">Components</h2>
+              <Input
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex-1 overflow-auto p-3 space-y-1">
+              {filteredComponents.map((comp) => (
+                <DraggableComponent
+                  key={comp.type}
+                  id={comp.type}
+                  type={comp.type}
+                  name={comp.name}
+                  icon={comp.icon}
+                  category={comp.category}
+                  onClick={() => handleComponentClick(comp.type, comp.name)}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* Canvas */}
+          <div className="flex-1 bg-muted/50 overflow-auto p-8">
+            <div
+              className="mx-auto bg-background shadow-lg rounded-lg overflow-hidden transition-all duration-200"
+              style={{ width: viewportWidth, minHeight: '800px' }}
+            >
+              <DropZone id="canvas-dropzone" isOver={!!overId && state.sections.length === 0}>
+                {state.sections.length === 0 ? (
+                  <div className="h-full flex items-center justify-center text-muted-foreground py-32">
+                    <div className="text-center">
+                      <div className="text-4xl mb-4">🎨</div>
+                      <p className="text-lg font-medium mb-2">Drag components here</p>
+                      <p className="text-sm">Or click a component to add it</p>
+                    </div>
+                  </div>
+                ) : (
+                  <SortableContext items={state.sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                    {state.sections.map((section) => (
+                      <SortableSection
+                        key={section.id}
+                        id={section.id}
+                        isSelected={state.selectedSectionId === section.id}
+                        onSelect={() => selectSection(section.id)}
+                        onRemove={() => removeSection(section.id)}
+                      >
+                        <SectionRenderer section={section} />
+                      </SortableSection>
+                    ))}
+                  </SortableContext>
+                )}
+              </DropZone>
+            </div>
+          </div>
+
+          {/* Right Sidebar — Properties */}
+          <div className="w-72 border-l border-border bg-muted/30 flex flex-col shrink-0">
+            <div className="p-3 border-b border-border">
+              <h2 className="text-sm font-semibold">Properties</h2>
+            </div>
+            <div className="flex-1 overflow-auto p-3">
+              {state.selectedSectionId ? (
+                <div className="space-y-3">
+                  {Object.entries(state.sections.find(s => s.id === state.selectedSectionId)?.props || {}).map(([key, value]) => (
+                    <div key={key}>
+                      <label className="block text-xs font-medium text-muted-foreground mb-1 capitalize">{key}</label>
+                      <Input value={String(value)} onChange={() => {}} />
+                    </div>
+                  ))}
+                  <Button size="sm" variant="danger" onClick={() => removeSection(state.selectedSectionId!)}>
+                    Remove Section
+                  </Button>
+                </div>
+              ) : (
+                <div className="text-center text-muted-foreground text-sm py-8">
+                  Select a component to edit
+                </div>
+              )}
             </div>
           </div>
         </div>
 
-        {/* Canvas */}
-        <div className="flex-1 bg-muted/50 overflow-auto p-8">
-          <div
-            className="mx-auto bg-background shadow-lg rounded-lg overflow-hidden transition-all duration-200"
-            style={{ width: viewportWidth, minHeight: '800px' }}
-          >
-            {state.sections.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-muted-foreground">
-                <div className="text-center">
-                  <div className="text-4xl mb-4">🎨</div>
-                  <p className="text-lg font-medium mb-2">Start building</p>
-                  <p className="text-sm">Click components to add them</p>
-                </div>
-              </div>
-            ) : (
-              state.sections.map((section) => (
-                <div
-                  key={section.id}
-                  onClick={() => selectSection(section.id)}
-                  className={`relative cursor-pointer transition-all ${
-                    state.selectedSectionId === section.id
-                      ? 'ring-2 ring-primary-500 ring-offset-2'
-                      : 'hover:ring-1 hover:ring-primary-300'
-                  }`}
-                >
-                  <SectionRenderer section={section} />
-                  {state.selectedSectionId === section.id && (
-                    <div className="absolute top-2 right-2 flex gap-1">
-                      <Badge variant="primary">{section.name}</Badge>
-                      <button
-                        onClick={(e) => { e.stopPropagation(); removeSection(section.id); }}
-                        className="p-1 rounded bg-red-500 text-white text-xs hover:bg-red-600"
-                      >
-                        ✕
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-        {/* Right Properties Panel */}
-        <div className="w-72 border-l border-border bg-muted/30 flex flex-col">
-          <div className="flex-1 overflow-auto p-3">
-            {state.selectedSectionId ? (
-              <div className="space-y-3">
-                <h3 className="font-medium text-sm">Edit Section</h3>
-                {Object.entries(state.sections.find(s => s.id === state.selectedSectionId)?.props || {}).map(([key, value]) => (
-                  <div key={key}>
-                    <label className="block text-xs font-medium text-muted-foreground mb-1">{key}</label>
-                    <Input value={String(value)} onChange={() => {}} />
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center text-muted-foreground text-sm py-8">
-                Select a component to edit
-              </div>
-            )}
-          </div>
-        </div>
+        <ToastContainer />
       </div>
 
-      <ToastContainer />
-    </div>
+      <DragOverlay>
+        {activeId ? (
+          <div className="bg-background rounded-lg shadow-2xl p-4 border border-border">
+            {componentPalette.find(c => c.type === activeId)?.name || 'Section'}
+          </div>
+        ) : null}
+      </DragOverlay>
+    </DndContext>
   );
 }
 
 export default function EditorPage() {
   return (
     <EditorProvider>
-      <EditorContent />
+      <DragDropEditor />
     </EditorProvider>
   );
 }
