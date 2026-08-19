@@ -1,136 +1,220 @@
-// ============================================================================
-// Visual Editor — Main Entry Point
-// Browser-based drag-and-drop web page builder
-// ============================================================================
+'use client';
 
-import React, { useState, useCallback, useRef, createContext, useContext } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
+export interface Section {
+  id: string;
+  component: string;
+  name: string;
+  props: Record<string, any>;
+}
+
 export interface EditorState {
-  spec: any;
+  sections: Section[];
   selectedSectionId: string | null;
-  hoveredSectionId: string | null;
   viewport: 'desktop' | 'tablet' | 'mobile';
   zoom: number;
-  history: any[][];
+  history: Section[][];
   historyIndex: number;
 }
 
-export interface EditorContextType {
-  state: EditorState;
-  setState: React.Dispatch<React.SetStateAction<EditorState>>;
-  selectSection: (id: string | null) => void;
-  updateSection: (id: string, updates: any) => void;
-  addSection: (pageId: string, section: any) => void;
-  removeSection: (id: string) => void;
-  moveSection: (fromIndex: number, toIndex: number) => void;
-  undo: () => void;
-  redo: () => void;
+// ─── Toast Event System ────────────────────────────────────────────────────
+
+type ToastType = 'success' | 'error' | 'info' | 'warning';
+type ToastListener = (type: ToastType, message: string) => void;
+
+const toastListeners: ToastListener[] = [];
+
+export function showToast(type: ToastType, message: string) {
+  toastListeners.forEach(fn => fn(type, message));
 }
 
-export const EditorContext = createContext<EditorContextType>(null!);
+export function useToastListener() {
+  const [toasts, setToasts] = useState<Array<{ id: string; type: ToastType; message: string }>>([]);
 
-export function useEditor() {
-  return useContext(EditorContext);
+  useEffect(() => {
+    const listener: ToastListener = (type, message) => {
+      const id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+      setToasts(prev => [...prev, { id, type, message }]);
+      setTimeout(() => {
+        setToasts(prev => prev.filter(t => t.id !== id));
+      }, 3000);
+    };
+    toastListeners.push(listener);
+    return () => {
+      const idx = toastListeners.indexOf(listener);
+      if (idx >= 0) toastListeners.splice(idx, 1);
+    };
+  }, []);
+
+  return toasts;
 }
 
-// ─── Editor Provider ────────────────────────────────────────────────────────
+export function ToastContainer() {
+  const toasts = useToastListener();
 
-interface EditorProviderProps {
-  children: React.ReactNode;
-  initialSpec: any;
+  const removeToast = (id: string) => {
+    // Toasts auto-dismiss after timeout
+  };
+
+  return (
+    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2" aria-live="polite" aria-label="Notifications">
+      {toasts.map(toast => (
+        <div
+          key={toast.id}
+          role="alert"
+          className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-sm font-medium animate-slide-up min-w-[280px] ${
+            toast.type === 'success' ? 'bg-green-500 text-white' :
+            toast.type === 'error' ? 'bg-red-500 text-white' :
+            toast.type === 'warning' ? 'bg-yellow-500 text-white' :
+            'bg-blue-500 text-white'
+          }`}
+        >
+          <span className="flex-1">{toast.message}</span>
+          <button
+            onClick={() => removeToast(toast.id)}
+            className="p-1 rounded hover:bg-white/20"
+            aria-label="Dismiss"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      ))}
+    </div>
+  );
 }
 
-export function EditorProvider({ children, initialSpec }: EditorProviderProps) {
+// ─── Editor Hook ────────────────────────────────────────────────────────────
+
+export function useEditor(initialSections: Section[] = []) {
   const [state, setState] = useState<EditorState>({
-    spec: initialSpec,
+    sections: initialSections,
     selectedSectionId: null,
-    hoveredSectionId: null,
     viewport: 'desktop',
     zoom: 1,
-    history: [initialSpec],
+    history: [initialSections],
     historyIndex: 0,
   });
 
-  const selectSection = useCallback((id: string | null) => {
-    setState(s => ({ ...s, selectedSectionId: id }));
-  }, []);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const updateSection = useCallback((id: string, updates: any) => {
-    setState(s => {
-      const newSpec = { ...s.spec };
-      // Find and update the section
-      for (const page of newSpec.structure.pages) {
-        for (let i = 0; i < page.sections.length; i++) {
-          if (page.sections[i].id === id) {
-            page.sections[i] = { ...page.sections[i], ...updates };
-            break;
-          }
-        }
-      }
-      return { ...s, spec: newSpec };
-    });
-  }, []);
-
-  const addSection = useCallback((pageId: string, section: any) => {
-    setState(s => {
-      const newSpec = { ...s.spec };
-      const page = newSpec.structure.pages.find((p: any) => p.id === pageId);
-      if (page) {
-        page.sections.push(section);
-      }
-      return { ...s, spec: newSpec };
-    });
+  const addSection = useCallback((component: string, name: string) => {
+    setIsLoading(true);
+    setTimeout(() => {
+      const newSection: Section = {
+        id: `section_${Date.now()}`,
+        component,
+        name,
+        props: getDefaultProps(component),
+      };
+      setState(prev => ({
+        ...prev,
+        sections: [...prev.sections, newSection],
+        selectedSectionId: newSection.id,
+        history: [...prev.history.slice(0, prev.historyIndex + 1), [...prev.sections, newSection]],
+        historyIndex: prev.historyIndex + 1,
+      }));
+      setIsLoading(false);
+      showToast('success', `${name} added`);
+    }, 300);
   }, []);
 
   const removeSection = useCallback((id: string) => {
-    setState(s => {
-      const newSpec = { ...s.spec };
-      for (const page of newSpec.structure.pages) {
-        page.sections = page.sections.filter((sec: any) => sec.id !== id);
-      }
-      return { ...s, spec: newSpec, selectedSectionId: null };
+    setState(prev => {
+      const newSections = prev.sections.filter(s => s.id !== id);
+      return {
+        ...prev,
+        sections: newSections,
+        selectedSectionId: null,
+        history: [...prev.history.slice(0, prev.historyIndex + 1), newSections],
+        historyIndex: prev.historyIndex + 1,
+      };
     });
+    showToast('info', 'Section removed');
   }, []);
 
-  const moveSection = useCallback((fromIndex: number, toIndex: number) => {
-    setState(s => {
-      const newSpec = { ...s.spec };
-      for (const page of newSpec.structure.pages) {
-        const [moved] = page.sections.splice(fromIndex, 1);
-        if (moved) page.sections.splice(toIndex, 0, moved);
-      }
-      return { ...s, spec: newSpec };
-    });
+  const updateSection = useCallback((id: string, updates: Partial<Section>) => {
+    setState(prev => ({
+      ...prev,
+      sections: prev.sections.map(s =>
+        s.id === id ? { ...s, ...updates } : s
+      ),
+    }));
+  }, []);
+
+  const selectSection = useCallback((id: string | null) => {
+    setState(prev => ({ ...prev, selectedSectionId: id }));
   }, []);
 
   const undo = useCallback(() => {
-    setState(s => {
-      if (s.historyIndex > 0) {
-        return { ...s, historyIndex: s.historyIndex - 1, spec: s.history[s.historyIndex - 1] };
+    setState(prev => {
+      if (prev.historyIndex > 0) {
+        return {
+          ...prev,
+          historyIndex: prev.historyIndex - 1,
+          sections: prev.history[prev.historyIndex - 1],
+        };
       }
-      return s;
+      return prev;
     });
   }, []);
 
   const redo = useCallback(() => {
-    setState(s => {
-      if (s.historyIndex < s.history.length - 1) {
-        return { ...s, historyIndex: s.historyIndex + 1, spec: s.history[s.historyIndex + 1] };
+    setState(prev => {
+      if (prev.historyIndex < prev.history.length - 1) {
+        return {
+          ...prev,
+          historyIndex: prev.historyIndex + 1,
+          sections: prev.history[prev.historyIndex + 1],
+        };
       }
-      return s;
+      return prev;
     });
   }, []);
 
-  return (
-    <EditorContext.Provider value={{
-      state, setState, selectSection, updateSection,
-      addSection, removeSection, moveSection, undo, redo
-    }}>
-      {children}
-    </EditorContext.Provider>
-  );
+  const setViewport = useCallback((viewport: 'desktop' | 'tablet' | 'mobile') => {
+    setState(prev => ({ ...prev, viewport }));
+  }, []);
+
+  const setZoom = useCallback((zoom: number) => {
+    setState(prev => ({ ...prev, zoom: Math.max(0.5, Math.min(2, zoom)) }));
+  }, []);
+
+  return {
+    state,
+    isLoading,
+    addSection,
+    removeSection,
+    updateSection,
+    selectSection,
+    undo,
+    redo,
+    setViewport,
+    setZoom,
+  };
 }
 
-export default EditorProvider;
+function getDefaultProps(component: string): Record<string, any> {
+  switch (component) {
+    case 'hero':
+      return { title: 'Welcome to Your App', subtitle: 'Build something amazing', ctaText: 'Get Started', ctaLink: '#' };
+    case 'features':
+      return { title: 'Features', subtitle: 'Everything you need', columns: 3 };
+    case 'pricing':
+      return { title: 'Pricing', subtitle: 'Choose your plan', tiers: 3 };
+    case 'cta':
+      return { title: 'Ready to get started?', buttonText: 'Sign Up Now', buttonLink: '#' };
+    case 'stats':
+      return { title: 'Our Impact' };
+    case 'testimonials':
+      return { title: 'What Users Say' };
+    default:
+      return {};
+  }
+}
+
+export default { useEditor, showToast };
