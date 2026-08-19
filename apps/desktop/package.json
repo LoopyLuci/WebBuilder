@@ -1,0 +1,18 @@
+{
+  "name": "webbuilder-desktop",
+  "version": "1.0.0",
+  "description": "WebBuilder Desktop - Native cross-platform app",
+  "private": true,
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "devDependencies": {
+    "electron": "^32.0.0",
+    "electron-builder": "^25.0.0"
+  }
+}

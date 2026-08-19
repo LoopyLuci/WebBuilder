@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WebBuilder</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+      color: #f8fafc;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    .container {
+      text-align: center;
+      padding: 40px;
+    }
+    h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      background: linear-gradient(to right, #60a5fa, #a78bfa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    p {
+      font-size: 1.25rem;
+      color: #94a3b8;
+      margin-bottom: 2rem;
+    }
+    .button {
+      display: inline-block;
+      padding: 12px 24px;
+      background: #3b82f6;
+      color: white;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      margin: 8px;
+      cursor: pointer;
+      border: none;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+    .button:hover { background: #2563eb; }
+    .button.secondary { background: #475569; }
+    .button.secondary:hover { background: #334155; }
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      max-width: 800px;
+      margin: 32px auto;
+    }
+    .feature-card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 24px;
+    }
+    .feature-card h3 { margin-bottom: 8px; color: #f8fafc; }
+    .feature-card p { font-size: 0.875rem; color: #94a3b8; }
+    #log {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.8);
+      color: #22c55e;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 12px;
+      max-height: 200px;
+      overflow-y: auto;
+      border-top: 1px solid #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>WebBuilder</h1>
+    <p>Next-generation agentic web/app building platform</p>
+    
+    <div>
+      <button class="button" onclick="invoke('get_system_info')">Get System Info</button>
+      <button class="button" onclick="invoke('get_app_version')">Get App Version</button>
+      <button class="button secondary" onclick="runCmd()">Run Command</button>
+    </div>
+
+    <div class="features">
+      <div class="feature-card">
+        <h3>🎨 Visual Editor</h3>
+        <p>Drag-and-drop components</p>
+      </div>
+      <div class="feature-card">
+        <h3>🤖 AI-Powered</h3>
+        <p>Natural language to code</p>
+      </div>
+      <div class="feature-card">
+        <h3>📱 Android Builder</h3>
+        <p>Kotlin + Jetpack Compose</p>
+      </div>
+      <div class="feature-card">
+        <h3>⚡ MCP Integration</h3>
+        <p>Works with Hermes, Claude</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="log"></div>
+
+  <script>
+    const { invoke } = window.__TAURI__.core;
+    
+    async function invoke(command) {
+      try {
+        const result = await invoke(command);
+        log(`${command}: ${JSON.stringify(result)}`);
+      } catch (err) {
+        log(`${command} ERROR: ${err}`);
+      }
+    }
+    
+    async function runCmd() {
+      try {
+        const result = await invoke('run_command', { cmd: 'echo', args: ['Hello from Tauri!'] });
+        log(`run_command: ${result}`);
+      } catch (err) {
+        log(`run_command ERROR: ${err}`);
+      }
+    }
+    
+    function log(msg) {
+      const el = document.getElementById('log');
+      const line = document.createElement('div');
+      line.textContent = `> ${msg}`;
+      el.appendChild(line);
+      el.scrollTop = el.scrollHeight;
+      console.log(msg);
+    }
+    
+    log('WebBuilder Desktop initialized');
+  </script>
+</body>
+</html>

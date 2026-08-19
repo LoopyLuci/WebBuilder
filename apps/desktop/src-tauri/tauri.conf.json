@@ -1,0 +1,37 @@
+{
+  "productName": "WebBuilder",
+  "version": "1.0.0",
+  "identifier": "com.webbuilder.app",
+  "build": {
+    "beforeDevCommand": "",
+    "devUrl": "",
+    "beforeBuildCommand": "",
+    "frontendDist": "./src-tauri"
+  },
+  "app": {
+    "title": "WebBuilder",
+    "windows": [
+      {
+        "title": "WebBuilder",
+        "width": 1400,
+        "height": 900,
+        "minWidth": 1200,
+        "minHeight": 700,
+        "resizable": true,
+        "fullscreen": false,
+        "decorations": true,
+        "transparent": false,
+        "alwaysOnTop": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": []
+  }
+}
