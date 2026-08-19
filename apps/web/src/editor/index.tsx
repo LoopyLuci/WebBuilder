@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useCallback, createContext, useContext } from 'react';
+import React, { useState, useRef, useCallback, createContext, useContext, useEffect } from 'react';
 
 // ─── Toast System ──────────────────────────────────────────────────────────
 
@@ -63,6 +63,46 @@ export function ToastContainer() {
   );
 }
 
+// ─── Project Persistence ──────────────────────────────────────
+
+export interface SavedProject {
+  id: string;
+  name: string;
+  description: string;
+  sections: Section[];
+  viewport: 'desktop' | 'tablet' | 'mobile';
+  createdAt: string;
+  updatedAt: string;
+}
+
+const STORAGE_KEY = 'webbuilder-projects';
+
+export function getSavedProjects(): SavedProject[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const data = localStorage.getItem(STORAGE_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveProject(project: SavedProject): void {
+  const projects = getSavedProjects();
+  const existing = projects.findIndex(p => p.id === project.id);
+  if (existing >= 0) {
+    projects[existing] = { ...project, updatedAt: new Date().toISOString() };
+  } else {
+    projects.push(project);
+  }
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+}
+
+export function deleteProject(id: string): void {
+  const projects = getSavedProjects().filter(p => p.id !== id);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(projects));
+}
+
 // ─── Editor Types ───────────────────────────────────────────────────────────
 
 export interface Section {
@@ -94,6 +134,9 @@ interface EditorContextType {
   redo: () => void;
   setViewport: (viewport: 'desktop' | 'tablet' | 'mobile') => void;
   setZoom: (zoom: number) => void;
+  saveCurrentProject: (name: string, description: string) => void;
+  loadProject: (project: SavedProject) => void;
+  currentProjectId: string | null;
 }
 
 const EditorContext = createContext<EditorContextType | null>(null);
@@ -122,6 +165,7 @@ export function EditorProvider({ children, initialSections = [] }: EditorProvide
   });
 
   const [isLoading, setIsLoading] = useState(false);
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null);
 
   const addSection = useCallback((component: string, name: string) => {
     setIsLoading(true);
@@ -195,10 +239,39 @@ export function EditorProvider({ children, initialSections = [] }: EditorProvide
     setState(prev => ({ ...prev, zoom: Math.max(0.5, Math.min(2, zoom)) }));
   }, []);
 
+  const saveCurrentProject = useCallback((name: string, description: string) => {
+    const project: SavedProject = {
+      id: currentProjectId || `project_${Date.now()}`,
+      name,
+      description,
+      sections: state.sections,
+      viewport: state.viewport,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    saveProject(project);
+    setCurrentProjectId(project.id);
+    showToast('success', `Project "${name}" saved`);
+  }, [state.sections, state.viewport, currentProjectId]);
+
+  const loadProject = useCallback((project: SavedProject) => {
+    setState({
+      sections: project.sections,
+      selectedSectionId: null,
+      viewport: project.viewport,
+      zoom: 1,
+      history: [project.sections],
+      historyIndex: 0,
+    });
+    setCurrentProjectId(project.id);
+    showToast('success', `Project "${project.name}" loaded`);
+  }, []);
+
   return (
     <EditorContext.Provider value={{
       state, isLoading, addSection, removeSection, updateSection,
-      selectSection, undo, redo, setViewport, setZoom
+      selectSection, undo, redo, setViewport, setZoom,
+      saveCurrentProject, loadProject, currentProjectId
     }}>
       {children}
     </EditorContext.Provider>
@@ -224,4 +297,4 @@ function getDefaultProps(component: string): Record<string, any> {
   }
 }
 
-export default { EditorProvider, useEditorContext, ToastContainer, showToast };
+export default { EditorProvider, useEditorContext, ToastContainer, showToast, getSavedProjects, deleteProject };

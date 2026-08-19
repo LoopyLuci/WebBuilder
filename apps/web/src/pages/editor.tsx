@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   DndContext,
   DragOverlay,
@@ -14,7 +14,7 @@ import {
   DragOverEvent,
 } from '@dnd-kit/core';
 import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
-import { EditorProvider, useEditorContext, ToastContainer } from '@/editor';
+import { EditorProvider, useEditorContext, ToastContainer, getSavedProjects, deleteProject, SavedProject } from '@/editor';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { CommandPalette } from '@/components/ui/CommandPalette';
@@ -25,6 +25,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { DraggableComponent } from '@/components/editor/DraggableComponent';
 import { SortableSection } from '@/components/editor/SortableSection';
 import { DropZone } from '@/components/editor/DropZone';
+import { ProjectManager } from '@/components/editor/ProjectManager';
 import { showToast } from '@/editor';
 
 // ─── Component Palette ─────────────────────────────────────────────────────
@@ -40,10 +41,11 @@ const componentPalette = [
   { type: 'navbar', name: 'Navbar', icon: '🔝', category: 'Navigation' },
 ];
 
-function EditorWithShortcuts() {
+function EditorWithPersistence() {
   const {
     state, isLoading, addSection, removeSection, updateSection,
-    selectSection, undo, redo, setViewport, setZoom
+    selectSection, undo, redo, setViewport, setZoom,
+    saveCurrentProject, loadProject, currentProjectId
   } = useEditorContext();
 
   const [searchQuery, setSearchQuery] = useState('');
@@ -53,6 +55,7 @@ function EditorWithShortcuts() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isPropertiesOpen, setIsPropertiesOpen] = useState(true);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [isProjectManagerOpen, setIsProjectManagerOpen] = useState(false);
 
   // Check if first visit
   React.useEffect(() => {
@@ -99,8 +102,8 @@ function EditorWithShortcuts() {
   const handleZoomOut = useCallback(() => setZoom(state.zoom - 0.1), [state.zoom, setZoom]);
 
   const handleSave = useCallback(() => {
-    showToast('success', 'Project saved');
-  }, []);
+    saveCurrentProject('Untitled Project', '');
+  }, [saveCurrentProject]);
 
   useKeyboardShortcuts({
     'mod+z': handleUndo,
@@ -182,6 +185,23 @@ function EditorWithShortcuts() {
       action: () => handleComponentClick(c.type, c.name),
     })),
     {
+      id: 'save',
+      label: 'Save Project',
+      description: 'Save your current project',
+      icon: '💾',
+      category: 'File',
+      shortcut: '⌘S',
+      action: handleSave,
+    },
+    {
+      id: 'load',
+      label: 'Open Project',
+      description: 'Open a saved project',
+      icon: '📂',
+      category: 'File',
+      action: () => setIsProjectManagerOpen(true),
+    },
+    {
       id: 'undo',
       label: 'Undo',
       description: 'Undo the last action',
@@ -261,15 +281,6 @@ function EditorWithShortcuts() {
       category: 'View',
       shortcut: '⌘-',
       action: handleZoomOut,
-    },
-    {
-      id: 'save',
-      label: 'Save Project',
-      description: 'Save your current project',
-      icon: '💾',
-      category: 'File',
-      shortcut: '⌘S',
-      action: handleSave,
     },
     {
       id: 'deploy',
@@ -359,6 +370,16 @@ function EditorWithShortcuts() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Tooltip content="Open Project" position="bottom">
+              <Button size="sm" variant="ghost" onClick={() => setIsProjectManagerOpen(true)}>
+                📂 <span className="hidden sm:inline ml-1">Open</span>
+              </Button>
+            </Tooltip>
+            <Tooltip content="Save (⌘S)" position="bottom">
+              <Button size="sm" variant="ghost" onClick={handleSave}>
+                💾 <span className="hidden sm:inline ml-1">Save</span>
+              </Button>
+            </Tooltip>
             <Tooltip content="Undo (⌘Z)" position="bottom">
               <Button size="sm" variant="ghost" onClick={handleUndo} disabled={state.historyIndex === 0}>
                 ↩
@@ -430,7 +451,7 @@ function EditorWithShortcuts() {
                     title="Start building"
                     description="Drag components here or click to add. Press ⌘K for command palette."
                     action={{ label: 'Add Hero Section', onClick: () => handleComponentClick('hero', 'Hero Section') }}
-                    secondaryAction={{ label: 'Open Command Palette', onClick: () => setIsPaletteOpen(true) }}
+                    secondaryAction={{ label: 'Open Project', onClick: () => setIsProjectManagerOpen(true) }}
                   />
                 ) : (
                   <SortableContext items={state.sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
@@ -513,6 +534,27 @@ function EditorWithShortcuts() {
         }}
       />
 
+      {/* Project Manager */}
+      <ProjectManager
+        isOpen={isProjectManagerOpen}
+        onClose={() => setIsProjectManagerOpen(false)}
+        onLoad={(project) => {
+          loadProject(project);
+          setIsProjectManagerOpen(false);
+        }}
+        onNew={() => {
+          loadProject({
+            id: '',
+            name: '',
+            description: '',
+            sections: [],
+            viewport: 'desktop',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          });
+        }}
+      />
+
       <DragOverlay>
         {activeId ? (
           <div className="bg-background rounded-lg shadow-2xl p-4 border border-border">
@@ -527,7 +569,7 @@ function EditorWithShortcuts() {
 export default function EditorPage() {
   return (
     <EditorProvider>
-      <EditorWithShortcuts />
+      <EditorWithPersistence />
     </EditorProvider>
   );
 }
