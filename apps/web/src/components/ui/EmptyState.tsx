@@ -1,80 +1,53 @@
-import React, { forwardRef } from 'react';
-import { cn } from '@/lib/utils';
+'use client';
 
-export interface EmptyStateProps extends React.HTMLAttributes<HTMLDivElement> {
+import React from 'react';
+
+interface EmptyStateProps {
   icon?: React.ReactNode;
   title: string;
   description?: string;
-  action?: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg';
+  action?: {
+    label: string;
+    onClick: () => void;
+  };
+  secondaryAction?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
-const containerSizes = {
-  sm: 'py-8',
-  md: 'py-12',
-  lg: 'py-16',
-};
-
-const iconSizes = {
-  sm: 'h-10 w-10',
-  md: 'h-14 w-14',
-  lg: 'h-20 w-20',
-};
-
-const titleSizes = {
-  sm: 'text-base',
-  md: 'text-lg',
-  lg: 'text-xl',
-};
-
-export const EmptyState = forwardRef<HTMLDivElement, EmptyStateProps>(
-  ({ className, icon, title, description, action, size = 'md', ...props }, ref) => {
-    return (
-      <div
-        ref={ref}
-        role="status"
-        aria-label={title}
-        className={cn(
-          'flex flex-col items-center justify-center text-center',
-          containerSizes[size],
-          className
-        )}
-        {...props}
-      >
-        {icon && (
-          <div
-            className={cn(
-              'mb-4 flex items-center justify-center rounded-full bg-muted text-muted-foreground',
-              iconSizes[size]
-            )}
-          >
-            {React.isValidElement(icon)
-              ? React.cloneElement(icon as React.ReactElement<{ className?: string }>, {
-                  className: cn(
-                    size === 'sm' ? 'h-5 w-5' : size === 'md' ? 'h-7 w-7' : 'h-10 w-10',
-                    (icon.props as { className?: string })?.className
-                  ),
-                })
-              : icon}
-          </div>
-        )}
-        <h3 className={cn('font-semibold text-foreground', titleSizes[size])}>
-          {title}
-        </h3>
-        {description && (
-          <p className="mt-1.5 max-w-sm text-sm text-muted-foreground">
-            {description}
-          </p>
-        )}
+export function EmptyState({ icon, title, description, action, secondaryAction }: EmptyStateProps) {
+  return (
+    <div className="flex flex-col items-center justify-center text-center p-8">
+      {icon && (
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-muted flex items-center justify-center text-3xl">
+          {icon}
+        </div>
+      )}
+      <h3 className="text-lg font-semibold mb-2">{title}</h3>
+      {description && (
+        <p className="text-sm text-muted-foreground mb-6 max-w-sm">{description}</p>
+      )}
+      <div className="flex gap-3">
         {action && (
-          <div className="mt-4">
-            {action}
-          </div>
+          <button
+            onClick={action.onClick}
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 transition-colors"
+          >
+            {action.label}
+          </button>
+        )}
+        {secondaryAction && (
+          <button
+            onClick={secondaryAction.onClick}
+            className="px-4 py-2 border border-border rounded-lg font-medium hover:bg-muted transition-colors"
+          >
+            {secondaryAction.label}
+          </button>
         )}
       </div>
-    );
-  }
-);
+    </div>
+  );
+}
 
-EmptyState.displayName = 'EmptyState';
 export default EmptyState;

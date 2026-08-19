@@ -12,6 +12,9 @@ export { Spinner } from './Spinner';
 export { Tooltip } from './Tooltip';
 export { CommandPalette } from './CommandPalette';
 export { LoadingSpinner } from './LoadingSpinner';
+export { ErrorBoundary } from './ErrorBoundary';
+export { EmptyState } from './EmptyState';
+export { WelcomeModal } from './WelcomeModal';
 
 export default {
   Button: () => import('./Button'),
@@ -25,4 +28,7 @@ export default {
   Tooltip: () => import('./Tooltip'),
   CommandPalette: () => import('./CommandPalette'),
   LoadingSpinner: () => import('./LoadingSpinner'),
+  ErrorBoundary: () => import('./ErrorBoundary'),
+  EmptyState: () => import('./EmptyState'),
+  WelcomeModal: () => import('./WelcomeModal'),
 };

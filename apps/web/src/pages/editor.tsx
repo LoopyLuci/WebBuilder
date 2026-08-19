@@ -18,6 +18,9 @@ import { EditorProvider, useEditorContext, ToastContainer } from '@/editor';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { CommandPalette } from '@/components/ui/CommandPalette';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { WelcomeModal } from '@/components/ui/WelcomeModal';
+import { Tooltip } from '@/components/ui/Tooltip';
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { DraggableComponent } from '@/components/editor/DraggableComponent';
 import { SortableSection } from '@/components/editor/SortableSection';
@@ -49,6 +52,16 @@ function EditorWithShortcuts() {
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isPropertiesOpen, setIsPropertiesOpen] = useState(true);
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  // Check if first visit
+  React.useEffect(() => {
+    const hasVisited = localStorage.getItem('webbuilder-visited');
+    if (!hasVisited) {
+      setShowWelcome(true);
+      localStorage.setItem('webbuilder-visited', 'true');
+    }
+  }, []);
 
   // ─── Keyboard Shortcuts ──────────────────────────────────────────────────
 
@@ -305,61 +318,74 @@ function EditorWithShortcuts() {
         <div className="h-14 border-b border-border bg-background flex items-center justify-between px-4 shrink-0">
           <div className="flex items-center gap-3">
             {/* Mobile sidebar toggle */}
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="lg:hidden p-2 rounded-lg hover:bg-muted"
-              aria-label="Toggle sidebar"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
-            </button>
+            <Tooltip content="Toggle sidebar" position="bottom">
+              <button
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                className="lg:hidden p-2 rounded-lg hover:bg-muted"
+                aria-label="Toggle sidebar"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+            </Tooltip>
 
             <h1 className="text-lg font-bold hidden sm:block">WebBuilder</h1>
 
             <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
               {(['mobile', 'tablet', 'desktop'] as const).map((v, i) => (
-                <button
-                  key={v}
-                  onClick={() => setViewport(v)}
-                  className={`px-3 py-1 rounded text-sm ${
-                    state.viewport === v ? 'bg-background shadow text-primary-600' : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                  title={`${v} (${i + 1})`}
-                >
-                  {v === 'mobile' ? '📱' : v === 'tablet' ? '📟' : '🖥️'}
-                </button>
+                <Tooltip key={v} content={`${v} (${i + 1})`} position="bottom">
+                  <button
+                    onClick={() => setViewport(v)}
+                    className={`px-3 py-1 rounded text-sm ${
+                      state.viewport === v ? 'bg-background shadow text-primary-600' : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    {v === 'mobile' ? '📱' : v === 'tablet' ? '📟' : '🖥️'}
+                  </button>
+                </Tooltip>
               ))}
             </div>
 
             <div className="hidden sm:flex items-center gap-2">
-              <Button size="sm" variant="ghost" onClick={handleZoomOut} title="Zoom out (⌘-)" className="w-8 p-0">-</Button>
+              <Tooltip content="Zoom out (⌘-)" position="bottom">
+                <Button size="sm" variant="ghost" onClick={handleZoomOut} className="w-8 p-0">-</Button>
+              </Tooltip>
               <span className="text-sm text-muted-foreground w-12 text-center">{Math.round(state.zoom * 100)}%</span>
-              <Button size="sm" variant="ghost" onClick={handleZoomIn} title="Zoom in (⌘+)" className="w-8 p-0">+</Button>
+              <Tooltip content="Zoom in (⌘+)" position="bottom">
+                <Button size="sm" variant="ghost" onClick={handleZoomIn} className="w-8 p-0">+</Button>
+              </Tooltip>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="ghost" onClick={handleUndo} disabled={state.historyIndex === 0} title="Undo (⌘Z)">
-              ↩ <span className="hidden sm:inline">Undo</span>
-            </Button>
-            <Button size="sm" variant="ghost" onClick={handleRedo} disabled={state.historyIndex === state.history.length - 1} title="Redo (⌘⇧Z)">
-              ↪ <span className="hidden sm:inline">Redo</span>
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => setIsPaletteOpen(true)}
-              title="Command Palette (⌘K)"
-            >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <span className="hidden sm:inline">⌘K</span>
-            </Button>
-            <Button size="sm" variant="primary" onClick={() => showToast('success', 'Deployment started!')}>
-              🚀 <span className="hidden sm:inline">Deploy</span>
-            </Button>
+            <Tooltip content="Undo (⌘Z)" position="bottom">
+              <Button size="sm" variant="ghost" onClick={handleUndo} disabled={state.historyIndex === 0}>
+                ↩
+              </Button>
+            </Tooltip>
+            <Tooltip content="Redo (⌘⇧Z)" position="bottom">
+              <Button size="sm" variant="ghost" onClick={handleRedo} disabled={state.historyIndex === state.history.length - 1}>
+                ↪
+              </Button>
+            </Tooltip>
+            <Tooltip content="Command Palette (⌘K)" position="bottom">
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => setIsPaletteOpen(true)}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <span className="hidden sm:inline ml-1">⌘K</span>
+              </Button>
+            </Tooltip>
+            <Tooltip content="Deploy" position="bottom">
+              <Button size="sm" variant="primary" onClick={() => showToast('success', 'Deployment started!')}>
+                🚀
+              </Button>
+            </Tooltip>
           </div>
         </div>
 
@@ -399,16 +425,13 @@ function EditorWithShortcuts() {
             >
               <DropZone id="canvas-dropzone" isOver={!!overId && state.sections.length === 0}>
                 {state.sections.length === 0 ? (
-                  <div className="h-full flex items-center justify-center text-muted-foreground py-32">
-                    <div className="text-center px-4">
-                      <div className="text-4xl mb-4">🎨</div>
-                      <p className="text-lg font-medium mb-2">Start building</p>
-                      <p className="text-sm mb-4">Drag components here or click to add</p>
-                      <Button size="sm" variant="secondary" onClick={() => setIsPaletteOpen(true)}>
-                        Open Command Palette (⌘K)
-                      </Button>
-                    </div>
-                  </div>
+                  <EmptyState
+                    icon="🎨"
+                    title="Start building"
+                    description="Drag components here or click to add. Press ⌘K for command palette."
+                    action={{ label: 'Add Hero Section', onClick: () => handleComponentClick('hero', 'Hero Section') }}
+                    secondaryAction={{ label: 'Open Command Palette', onClick: () => setIsPaletteOpen(true) }}
+                  />
                 ) : (
                   <SortableContext items={state.sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
                     {state.sections.map((section) => (
@@ -436,12 +459,16 @@ function EditorWithShortcuts() {
               <h2 className="text-sm font-semibold">Properties</h2>
               {state.selectedSectionId && (
                 <div className="flex gap-1">
-                  <Button size="sm" variant="ghost" onClick={handleDuplicate} title="Duplicate (⌘D)" className="w-7 h-7 p-0">
-                    📋
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={handleDelete} title="Delete (⌫)" className="w-7 h-7 p-0 text-red-500">
-                    🗑️
-                  </Button>
+                  <Tooltip content="Duplicate (⌘D)" position="bottom">
+                    <Button size="sm" variant="ghost" onClick={handleDuplicate} className="w-7 h-7 p-0">
+                      📋
+                    </Button>
+                  </Tooltip>
+                  <Tooltip content="Delete (⌫)" position="bottom">
+                    <Button size="sm" variant="ghost" onClick={handleDelete} className="w-7 h-7 p-0 text-red-500">
+                      🗑️
+                    </Button>
+                  </Tooltip>
                 </div>
               )}
             </div>
@@ -456,10 +483,11 @@ function EditorWithShortcuts() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center text-muted-foreground text-sm py-8">
-                  <div className="text-2xl mb-2">👆</div>
-                  <p>Select a component to edit</p>
-                </div>
+                <EmptyState
+                  icon="👆"
+                  title="Select a component"
+                  description="Click on a section to edit its properties"
+                />
               )}
             </div>
           </div>
@@ -473,6 +501,16 @@ function EditorWithShortcuts() {
         commands={commands}
         isOpen={isPaletteOpen}
         onClose={() => setIsPaletteOpen(false)}
+      />
+
+      {/* Welcome Modal */}
+      <WelcomeModal
+        isOpen={showWelcome}
+        onClose={() => setShowWelcome(false)}
+        onGetStarted={() => {
+          setShowWelcome(false);
+          setIsPaletteOpen(true);
+        }}
       />
 
       <DragOverlay>
