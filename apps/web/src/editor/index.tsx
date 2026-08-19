@@ -1,8 +1,69 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import React, { useState, useRef, useCallback, createContext, useContext } from 'react';
 
-// ─── Types ──────────────────────────────────────────────────────────────────
+// ─── Toast System ──────────────────────────────────────────────────────────
+
+export interface ToastItem {
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  title?: string;
+  description?: string;
+  duration?: number;
+  action?: React.ReactNode;
+}
+
+type ToastListener = (toast: ToastItem) => void;
+const listeners: ToastListener[] = [];
+
+export function showToast(type: ToastItem['type'], message: string) {
+  const toast: ToastItem = { id: Date.now().toString(36), type, description: message };
+  listeners.forEach(fn => fn(toast));
+}
+
+export function useToastListener() {
+  const [toasts, setToasts] = useState<ToastItem[]>([]);
+
+  React.useEffect(() => {
+    const listener: ToastListener = (toast) => {
+      setToasts(prev => [...prev, toast]);
+      setTimeout(() => setToasts(prev => prev.filter(t => t.id !== toast.id)), toast.duration || 3000);
+    };
+    listeners.push(listener);
+    return () => { const idx = listeners.indexOf(listener); if (idx >= 0) listeners.splice(idx, 1); };
+  }, []);
+
+  return toasts;
+}
+
+export function ToastContainer() {
+  const toasts = useToastListener();
+  return (
+    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2" aria-live="polite" aria-label="Notifications">
+      {toasts.map(toast => (
+        <div
+          key={toast.id}
+          role="alert"
+          className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-sm font-medium animate-slide-up min-w-[280px] ${
+            toast.type === 'success' ? 'bg-green-500 text-white' :
+            toast.type === 'error' ? 'bg-red-500 text-white' :
+            toast.type === 'warning' ? 'bg-yellow-500 text-white' :
+            'bg-blue-500 text-white'
+          }`}
+        >
+          <span className="flex-1">{toast.description}</span>
+          <button onClick={() => {}} className="p-1 rounded hover:bg-white/20" aria-label="Dismiss">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Editor Types ───────────────────────────────────────────────────────────
 
 export interface Section {
   id: string;
@@ -20,77 +81,37 @@ export interface EditorState {
   historyIndex: number;
 }
 
-// ─── Toast Event System ────────────────────────────────────────────────────
+// ─── Editor Context ─────────────────────────────────────────────────────────
 
-type ToastType = 'success' | 'error' | 'info' | 'warning';
-type ToastListener = (type: ToastType, message: string) => void;
-
-const toastListeners: ToastListener[] = [];
-
-export function showToast(type: ToastType, message: string) {
-  toastListeners.forEach(fn => fn(type, message));
+interface EditorContextType {
+  state: EditorState;
+  isLoading: boolean;
+  addSection: (component: string, name: string) => void;
+  removeSection: (id: string) => void;
+  updateSection: (id: string, updates: Partial<Section>) => void;
+  selectSection: (id: string | null) => void;
+  undo: () => void;
+  redo: () => void;
+  setViewport: (viewport: 'desktop' | 'tablet' | 'mobile') => void;
+  setZoom: (zoom: number) => void;
 }
 
-export function useToastListener() {
-  const [toasts, setToasts] = useState<Array<{ id: string; type: ToastType; message: string }>>([]);
+const EditorContext = createContext<EditorContextType | null>(null);
 
-  useEffect(() => {
-    const listener: ToastListener = (type, message) => {
-      const id = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-      setToasts(prev => [...prev, { id, type, message }]);
-      setTimeout(() => {
-        setToasts(prev => prev.filter(t => t.id !== id));
-      }, 3000);
-    };
-    toastListeners.push(listener);
-    return () => {
-      const idx = toastListeners.indexOf(listener);
-      if (idx >= 0) toastListeners.splice(idx, 1);
-    };
-  }, []);
-
-  return toasts;
+export function useEditorContext() {
+  const context = useContext(EditorContext);
+  if (!context) throw new Error('useEditorContext must be used within EditorProvider');
+  return context;
 }
 
-export function ToastContainer() {
-  const toasts = useToastListener();
+// ─── Editor Provider ────────────────────────────────────────────────────────
 
-  const removeToast = (id: string) => {
-    // Toasts auto-dismiss after timeout
-  };
-
-  return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2" aria-live="polite" aria-label="Notifications">
-      {toasts.map(toast => (
-        <div
-          key={toast.id}
-          role="alert"
-          className={`flex items-center gap-3 px-4 py-3 rounded-lg shadow-lg text-sm font-medium animate-slide-up min-w-[280px] ${
-            toast.type === 'success' ? 'bg-green-500 text-white' :
-            toast.type === 'error' ? 'bg-red-500 text-white' :
-            toast.type === 'warning' ? 'bg-yellow-500 text-white' :
-            'bg-blue-500 text-white'
-          }`}
-        >
-          <span className="flex-1">{toast.message}</span>
-          <button
-            onClick={() => removeToast(toast.id)}
-            className="p-1 rounded hover:bg-white/20"
-            aria-label="Dismiss"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      ))}
-    </div>
-  );
+interface EditorProviderProps {
+  children: React.ReactNode;
+  initialSections?: Section[];
 }
 
-// ─── Editor Hook ────────────────────────────────────────────────────────────
-
-export function useEditor(initialSections: Section[] = []) {
+export function EditorProvider({ children, initialSections = [] }: EditorProviderProps) {
   const [state, setState] = useState<EditorState>({
     sections: initialSections,
     selectedSectionId: null,
@@ -140,9 +161,7 @@ export function useEditor(initialSections: Section[] = []) {
   const updateSection = useCallback((id: string, updates: Partial<Section>) => {
     setState(prev => ({
       ...prev,
-      sections: prev.sections.map(s =>
-        s.id === id ? { ...s, ...updates } : s
-      ),
+      sections: prev.sections.map(s => s.id === id ? { ...s, ...updates } : s),
     }));
   }, []);
 
@@ -153,11 +172,7 @@ export function useEditor(initialSections: Section[] = []) {
   const undo = useCallback(() => {
     setState(prev => {
       if (prev.historyIndex > 0) {
-        return {
-          ...prev,
-          historyIndex: prev.historyIndex - 1,
-          sections: prev.history[prev.historyIndex - 1],
-        };
+        return { ...prev, historyIndex: prev.historyIndex - 1, sections: prev.history[prev.historyIndex - 1] };
       }
       return prev;
     });
@@ -166,11 +181,7 @@ export function useEditor(initialSections: Section[] = []) {
   const redo = useCallback(() => {
     setState(prev => {
       if (prev.historyIndex < prev.history.length - 1) {
-        return {
-          ...prev,
-          historyIndex: prev.historyIndex + 1,
-          sections: prev.history[prev.historyIndex + 1],
-        };
+        return { ...prev, historyIndex: prev.historyIndex + 1, sections: prev.history[prev.historyIndex + 1] };
       }
       return prev;
     });
@@ -184,18 +195,14 @@ export function useEditor(initialSections: Section[] = []) {
     setState(prev => ({ ...prev, zoom: Math.max(0.5, Math.min(2, zoom)) }));
   }, []);
 
-  return {
-    state,
-    isLoading,
-    addSection,
-    removeSection,
-    updateSection,
-    selectSection,
-    undo,
-    redo,
-    setViewport,
-    setZoom,
-  };
+  return (
+    <EditorContext.Provider value={{
+      state, isLoading, addSection, removeSection, updateSection,
+      selectSection, undo, redo, setViewport, setZoom
+    }}>
+      {children}
+    </EditorContext.Provider>
+  );
 }
 
 function getDefaultProps(component: string): Record<string, any> {
@@ -217,4 +224,4 @@ function getDefaultProps(component: string): Record<string, any> {
   }
 }
 
-export default { useEditor, showToast };
+export default { EditorProvider, useEditorContext, ToastContainer, showToast };

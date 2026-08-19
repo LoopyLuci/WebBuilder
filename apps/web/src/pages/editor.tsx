@@ -1,30 +1,26 @@
 'use client';
 
-import React, { useState, useCallback, useRef } from 'react';
-import { useEditor, showToast, ToastContainer } from '@/editor';
+import React, { useState } from 'react';
+import { EditorProvider, useEditorContext, ToastContainer } from '@/editor';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { Spinner } from '@/components/ui/Spinner';
 
-// ─── Component Palette ─────────────────────────────────────────────────────
-
-const componentPalette = [
-  { type: 'hero', name: 'Hero Section', icon: '🖼️', category: 'Layout' },
-  { type: 'features', name: 'Features Grid', icon: '📋', category: 'Layout' },
-  { type: 'pricing', name: 'Pricing Table', icon: '💰', category: 'Layout' },
-  { type: 'cta', name: 'CTA Section', icon: '📣', category: 'Layout' },
-  { type: 'stats', name: 'Stats Grid', icon: '📊', category: 'Display' },
-  { type: 'testimonials', name: 'Testimonials', icon: '💬', category: 'Display' },
-  { type: 'footer', name: 'Footer', icon: '📄', category: 'Navigation' },
-  { type: 'navbar', name: 'Navbar', icon: '🔝', category: 'Navigation' },
-];
-
-export default function VisualEditor() {
-  const { state, isLoading, addSection, removeSection, selectSection, undo, redo, setViewport, setZoom } = useEditor();
+function EditorContent() {
+  const { state, addSection, removeSection, selectSection, undo, redo, setViewport, setZoom } = useEditorContext();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTab, setSelectedTab] = useState<'components' | 'properties'>('components');
+
+  const componentPalette = [
+    { type: 'hero', name: 'Hero Section', icon: '🖼️', category: 'Layout' },
+    { type: 'features', name: 'Features Grid', icon: '📋', category: 'Layout' },
+    { type: 'pricing', name: 'Pricing Table', icon: '💰', category: 'Layout' },
+    { type: 'cta', name: 'CTA Section', icon: '📣', category: 'Layout' },
+    { type: 'stats', name: 'Stats Grid', icon: '📊', category: 'Display' },
+    { type: 'testimonials', name: 'Testimonials', icon: '💬', category: 'Display' },
+    { type: 'footer', name: 'Footer', icon: '📄', category: 'Navigation' },
+    { type: 'navbar', name: 'Navbar', icon: '🔝', category: 'Navigation' },
+  ];
 
   const filteredComponents = componentPalette.filter(c =>
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -61,102 +57,35 @@ export default function VisualEditor() {
         <div className="flex items-center gap-2">
           <Button size="sm" variant="ghost" onClick={undo} disabled={state.historyIndex === 0}>↩ Undo</Button>
           <Button size="sm" variant="ghost" onClick={redo} disabled={state.historyIndex === state.history.length - 1}>↪ Redo</Button>
-          <Button size="sm" variant="primary">
-            🚀 Deploy
-          </Button>
+          <Button size="sm" variant="primary">🚀 Deploy</Button>
         </div>
       </div>
 
       <div className="flex-1 flex overflow-hidden">
         {/* Left Sidebar */}
         <div className="w-72 border-r border-border bg-muted/30 flex flex-col">
-          <div className="p-3 border-b border-border">
-            <div className="flex gap-1">
-              <button
-                onClick={() => setSelectedTab('components')}
-                className={`flex-1 px-3 py-1.5 rounded text-sm font-medium ${
-                  selectedTab === 'components' ? 'bg-background shadow' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Components
-              </button>
-              <button
-                onClick={() => setSelectedTab('properties')}
-                className={`flex-1 px-3 py-1.5 rounded text-sm font-medium ${
-                  selectedTab === 'properties' ? 'bg-background shadow' : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                Properties
-              </button>
+          <div className="flex-1 overflow-auto p-3 space-y-3">
+            <Input
+              placeholder="Search components..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            <div className="space-y-1">
+              {filteredComponents.map((comp) => (
+                <button
+                  key={comp.type}
+                  onClick={() => addSection(comp.type, comp.name)}
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-left hover:bg-background border border-transparent hover:border-border transition-all"
+                >
+                  <span className="text-xl">{comp.icon}</span>
+                  <div>
+                    <div className="font-medium">{comp.name}</div>
+                    <div className="text-xs text-muted-foreground">{comp.category}</div>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
-
-          {selectedTab === 'components' && (
-            <div className="flex-1 overflow-auto p-3 space-y-3">
-              <Input
-                placeholder="Search components..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <div className="space-y-1">
-                {filteredComponents.map((comp) => (
-                  <button
-                    key={comp.type}
-                    onClick={() => addSection(comp.type, comp.name)}
-                    className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-left hover:bg-background border border-transparent hover:border-border transition-all"
-                    draggable
-                    onDragStart={(e) => {
-                      e.dataTransfer.setData('componentType', comp.type);
-                      e.dataTransfer.setData('componentName', comp.name);
-                    }}
-                  >
-                    <span className="text-xl">{comp.icon}</span>
-                    <div>
-                      <div className="font-medium">{comp.name}</div>
-                      <div className="text-xs text-muted-foreground">{comp.category}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {selectedTab === 'properties' && (
-            <div className="flex-1 overflow-auto p-3">
-              {state.selectedSectionId ? (
-                <div className="space-y-3">
-                  <h3 className="font-medium text-sm">Edit Section</h3>
-                  {Object.entries(state.sections.find(s => s.id === state.selectedSectionId)?.props || {}).map(([key, value]) => (
-                    <div key={key}>
-                      <label className="block text-xs font-medium text-muted-foreground mb-1">{key}</label>
-                      <Input
-                        value={String(value)}
-                        onChange={(e) => {
-                          const section = state.sections.find(s => s.id === state.selectedSectionId);
-                          if (section) {
-                            updateSection(state.selectedSectionId!, {
-                              props: { ...section.props, [key]: e.target.value }
-                            });
-                          }
-                        }}
-                      />
-                    </div>
-                  ))}
-                  <Button
-                    size="sm"
-                    variant="danger"
-                    onClick={() => removeSection(state.selectedSectionId!)}
-                  >
-                    Remove Section
-                  </Button>
-                </div>
-              ) : (
-                <div className="text-center text-muted-foreground text-sm py-8">
-                  Select a component to edit
-                </div>
-              )}
-            </div>
-          )}
         </div>
 
         {/* Canvas */}
@@ -170,7 +99,7 @@ export default function VisualEditor() {
                 <div className="text-center">
                   <div className="text-4xl mb-4">🎨</div>
                   <p className="text-lg font-medium mb-2">Start building</p>
-                  <p className="text-sm">Drag components here or click to add</p>
+                  <p className="text-sm">Click components to add them</p>
                 </div>
               </div>
             ) : (
@@ -201,10 +130,39 @@ export default function VisualEditor() {
             )}
           </div>
         </div>
+
+        {/* Right Properties Panel */}
+        <div className="w-72 border-l border-border bg-muted/30 flex flex-col">
+          <div className="flex-1 overflow-auto p-3">
+            {state.selectedSectionId ? (
+              <div className="space-y-3">
+                <h3 className="font-medium text-sm">Edit Section</h3>
+                {Object.entries(state.sections.find(s => s.id === state.selectedSectionId)?.props || {}).map(([key, value]) => (
+                  <div key={key}>
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">{key}</label>
+                    <Input value={String(value)} onChange={() => {}} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center text-muted-foreground text-sm py-8">
+                Select a component to edit
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <ToastContainer />
     </div>
+  );
+}
+
+export default function EditorPage() {
+  return (
+    <EditorProvider>
+      <EditorContent />
+    </EditorProvider>
   );
 }
 
@@ -283,8 +241,4 @@ function SectionRenderer({ section }: { section: any }) {
       <div className="text-center text-gray-400">{section.name}</div>
     </section>
   );
-}
-
-function updateSection(id: string, updates: any) {
-  // This is a placeholder - the actual update is handled by the editor hook
 }
