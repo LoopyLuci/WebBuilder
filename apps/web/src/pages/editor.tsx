@@ -26,6 +26,8 @@ import { DraggableComponent } from '@/components/editor/DraggableComponent';
 import { SortableSection } from '@/components/editor/SortableSection';
 import { DropZone } from '@/components/editor/DropZone';
 import { ProjectManager } from '@/components/editor/ProjectManager';
+import { DeployModal } from '@/components/editor/DeployModal';
+import { LivePreview } from '@/components/editor/LivePreview';
 import { showToast } from '@/editor';
 
 // ─── Component Palette ─────────────────────────────────────────────────────
@@ -51,6 +53,8 @@ function EditorWithPersistence() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [isDeployOpen, setIsDeployOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isPropertiesOpen, setIsPropertiesOpen] = useState(true);
@@ -402,8 +406,13 @@ function EditorWithPersistence() {
                 <span className="hidden sm:inline ml-1">⌘K</span>
               </Button>
             </Tooltip>
+            <Tooltip content="Toggle Preview" position="bottom">
+              <Button size="sm" variant="ghost" onClick={() => setIsPreviewOpen(!isPreviewOpen)}>
+                👁️ <span className="hidden sm:inline ml-1">Preview</span>
+              </Button>
+            </Tooltip>
             <Tooltip content="Deploy" position="bottom">
-              <Button size="sm" variant="primary" onClick={() => showToast('success', 'Deployment started!')}>
+              <Button size="sm" variant="primary" onClick={() => setIsDeployOpen(true)}>
                 🚀
               </Button>
             </Tooltip>
@@ -438,38 +447,48 @@ function EditorWithPersistence() {
             </div>
           </div>
 
-          {/* Canvas */}
-          <div className="flex-1 bg-muted/50 overflow-auto p-4 sm:p-8">
-            <div
-              className="mx-auto bg-background shadow-lg rounded-lg overflow-hidden transition-all duration-200"
-              style={{ width: viewportWidth, minHeight: '800px' }}
-            >
-              <DropZone id="canvas-dropzone" isOver={!!overId && state.sections.length === 0}>
-                {state.sections.length === 0 ? (
-                  <EmptyState
-                    icon="🎨"
-                    title="Start building"
-                    description="Drag components here or click to add. Press ⌘K for command palette."
-                    action={{ label: 'Add Hero Section', onClick: () => handleComponentClick('hero', 'Hero Section') }}
-                    secondaryAction={{ label: 'Open Project', onClick: () => setIsProjectManagerOpen(true) }}
-                  />
-                ) : (
-                  <SortableContext items={state.sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
-                    {state.sections.map((section) => (
-                      <SortableSection
-                        key={section.id}
-                        id={section.id}
-                        isSelected={state.selectedSectionId === section.id}
-                        onSelect={() => selectSection(section.id)}
-                        onRemove={() => removeSection(section.id)}
-                      >
-                        <SectionRenderer section={section} />
-                      </SortableSection>
-                    ))}
-                  </SortableContext>
-                )}
-              </DropZone>
+          {/* Canvas + Preview */}
+          <div className="flex-1 flex overflow-auto">
+            {/* Visual Canvas */}
+            <div className={`bg-muted/50 overflow-auto p-4 sm:p-8 ${isPreviewOpen ? 'w-1/2' : 'flex-1'}`}>
+              <div
+                className="mx-auto bg-background shadow-lg rounded-lg overflow-hidden transition-all duration-200"
+                style={{ width: viewportWidth, minHeight: '800px' }}
+              >
+                <DropZone id="canvas-dropzone" isOver={!!overId && state.sections.length === 0}>
+                  {state.sections.length === 0 ? (
+                    <EmptyState
+                      icon="🎨"
+                      title="Start building"
+                      description="Drag components here or click to add. Press ⌘K for command palette."
+                      action={{ label: 'Add Hero Section', onClick: () => handleComponentClick('hero', 'Hero Section') }}
+                      secondaryAction={{ label: 'Open Project', onClick: () => setIsProjectManagerOpen(true) }}
+                    />
+                  ) : (
+                    <SortableContext items={state.sections.map(s => s.id)} strategy={verticalListSortingStrategy}>
+                      {state.sections.map((section) => (
+                        <SortableSection
+                          key={section.id}
+                          id={section.id}
+                          isSelected={state.selectedSectionId === section.id}
+                          onSelect={() => selectSection(section.id)}
+                          onRemove={() => removeSection(section.id)}
+                        >
+                          <SectionRenderer section={section} />
+                        </SortableSection>
+                      ))}
+                    </SortableContext>
+                  )}
+                </DropZone>
+              </div>
             </div>
+
+            {/* Live Preview Panel */}
+            {isPreviewOpen && (
+              <div className="w-1/2 border-l border-border flex flex-col">
+                <LivePreview />
+              </div>
+            )}
           </div>
 
           {/* Right Sidebar — Properties */}
@@ -553,6 +572,12 @@ function EditorWithPersistence() {
             updatedAt: new Date().toISOString(),
           });
         }}
+      />
+
+      {/* Deploy Modal */}
+      <DeployModal
+        isOpen={isDeployOpen}
+        onClose={() => setIsDeployOpen(false)}
       />
 
       <DragOverlay>
