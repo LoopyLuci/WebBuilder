@@ -17,6 +17,8 @@ import { SortableContext, sortableKeyboardCoordinates, verticalListSortingStrate
 import { EditorProvider, useEditorContext, ToastContainer } from '@/editor';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { CommandPalette } from '@/components/ui/CommandPalette';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
 import { DraggableComponent } from '@/components/editor/DraggableComponent';
 import { SortableSection } from '@/components/editor/SortableSection';
 import { DropZone } from '@/components/editor/DropZone';
@@ -35,11 +37,75 @@ const componentPalette = [
   { type: 'navbar', name: 'Navbar', icon: '🔝', category: 'Navigation' },
 ];
 
-function DragDropEditor() {
-  const { state, addSection, removeSection, updateSection, selectSection, undo, redo, setViewport, setZoom } = useEditorContext();
+function EditorWithShortcuts() {
+  const {
+    state, isLoading, addSection, removeSection, updateSection,
+    selectSection, undo, redo, setViewport, setZoom
+  } = useEditorContext();
+
   const [searchQuery, setSearchQuery] = useState('');
   const [activeId, setActiveId] = useState<string | null>(null);
   const [overId, setOverId] = useState<string | null>(null);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isPropertiesOpen, setIsPropertiesOpen] = useState(true);
+
+  // ─── Keyboard Shortcuts ──────────────────────────────────────────────────
+
+  const handleUndo = useCallback(() => {
+    if (state.historyIndex > 0) {
+      undo();
+      showToast('info', 'Undo');
+    }
+  }, [state.historyIndex, undo]);
+
+  const handleRedo = useCallback(() => {
+    if (state.historyIndex < state.history.length - 1) {
+      redo();
+      showToast('info', 'Redo');
+    }
+  }, [state.historyIndex, state.history.length, redo]);
+
+  const handleDelete = useCallback(() => {
+    if (state.selectedSectionId) {
+      removeSection(state.selectedSectionId);
+    }
+  }, [state.selectedSectionId, removeSection]);
+
+  const handleDuplicate = useCallback(() => {
+    if (state.selectedSectionId) {
+      const section = state.sections.find(s => s.id === state.selectedSectionId);
+      if (section) {
+        addSection(section.component, section.name);
+        showToast('success', `${section.name} duplicated`);
+      }
+    }
+  }, [state.selectedSectionId, state.sections, addSection]);
+
+  const handleZoomIn = useCallback(() => setZoom(state.zoom + 0.1), [state.zoom, setZoom]);
+  const handleZoomOut = useCallback(() => setZoom(state.zoom - 0.1), [state.zoom, setZoom]);
+
+  const handleSave = useCallback(() => {
+    showToast('success', 'Project saved');
+  }, []);
+
+  useKeyboardShortcuts({
+    'mod+z': handleUndo,
+    'mod+shift+z': handleRedo,
+    'mod+s': handleSave,
+    'mod+d': handleDuplicate,
+    'mod+k': () => setIsPaletteOpen(true),
+    'mod+=': handleZoomIn,
+    'mod+-': handleZoomOut,
+    'delete': handleDelete,
+    'backspace': handleDelete,
+    'escape': () => selectSection(null),
+    '1': () => setViewport('mobile'),
+    '2': () => setViewport('tablet'),
+    '3': () => setViewport('desktop'),
+  });
+
+  // ─── Drag and Drop ───────────────────────────────────────────────────────
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -58,8 +124,7 @@ function DragDropEditor() {
   }, []);
 
   const handleDragOver = useCallback((event: DragOverEvent) => {
-    const over = event.over;
-    setOverId(over ? (over.id as string) : null);
+    setOverId(event.over ? (event.over.id as string) : null);
   }, []);
 
   const handleDragEnd = useCallback((event: DragEndEvent) => {
@@ -69,16 +134,13 @@ function DragDropEditor() {
     const { active, over } = event;
 
     if (!over) {
-      // Dropped outside canvas — check if it's a new component from palette
       const paletteItem = componentPalette.find(c => c.type === active.id);
       if (paletteItem) {
         addSection(paletteItem.type, paletteItem.name);
-        showToast('success', `${paletteItem.name} added`);
       }
       return;
     }
 
-    // Reordering existing sections
     if (active.id !== over.id) {
       const oldIndex = state.sections.findIndex(s => s.id === active.id);
       const newIndex = state.sections.findIndex(s => s.id === over.id);
@@ -86,8 +148,7 @@ function DragDropEditor() {
         const newSections = [...state.sections];
         const [moved] = newSections.splice(oldIndex, 1);
         newSections.splice(newIndex, 0, moved);
-        updateSection(moved.id, { props: moved.props }); // Trigger state update
-        showToast('info', 'Section reordered');
+        updateSection(moved.id, moved);
       }
     }
   }, [state.sections, addSection, updateSection]);
@@ -95,6 +156,141 @@ function DragDropEditor() {
   const handleComponentClick = useCallback((type: string, name: string) => {
     addSection(type, name);
   }, [addSection]);
+
+  // ─── Command Palette Commands ─────────────────────────────────────────────
+
+  const commands = [
+    ...componentPalette.map(c => ({
+      id: `add-${c.type}`,
+      label: `Add ${c.name}`,
+      description: `Insert a ${c.name.toLowerCase()} into your page`,
+      icon: c.icon,
+      category: 'Components',
+      action: () => handleComponentClick(c.type, c.name),
+    })),
+    {
+      id: 'undo',
+      label: 'Undo',
+      description: 'Undo the last action',
+      icon: '↩',
+      category: 'Edit',
+      shortcut: '⌘Z',
+      action: handleUndo,
+    },
+    {
+      id: 'redo',
+      label: 'Redo',
+      description: 'Redo the last undone action',
+      icon: '↪',
+      category: 'Edit',
+      shortcut: '⌘⇧Z',
+      action: handleRedo,
+    },
+    {
+      id: 'duplicate',
+      label: 'Duplicate Section',
+      description: 'Duplicate the selected section',
+      icon: '📋',
+      category: 'Edit',
+      shortcut: '⌘D',
+      action: handleDuplicate,
+    },
+    {
+      id: 'delete',
+      label: 'Delete Section',
+      description: 'Remove the selected section',
+      icon: '🗑️',
+      category: 'Edit',
+      shortcut: '⌫',
+      action: handleDelete,
+    },
+    {
+      id: 'viewport-mobile',
+      label: 'Mobile Viewport',
+      description: 'Switch to mobile preview',
+      icon: '📱',
+      category: 'View',
+      shortcut: '1',
+      action: () => setViewport('mobile'),
+    },
+    {
+      id: 'viewport-tablet',
+      label: 'Tablet Viewport',
+      description: 'Switch to tablet preview',
+      icon: '📟',
+      category: 'View',
+      shortcut: '2',
+      action: () => setViewport('tablet'),
+    },
+    {
+      id: 'viewport-desktop',
+      label: 'Desktop Viewport',
+      description: 'Switch to desktop preview',
+      icon: '🖥️',
+      category: 'View',
+      shortcut: '3',
+      action: () => setViewport('desktop'),
+    },
+    {
+      id: 'zoom-in',
+      label: 'Zoom In',
+      description: 'Increase canvas zoom',
+      icon: '🔍',
+      category: 'View',
+      shortcut: '⌘+',
+      action: handleZoomIn,
+    },
+    {
+      id: 'zoom-out',
+      label: 'Zoom Out',
+      description: 'Decrease canvas zoom',
+      icon: '🔍',
+      category: 'View',
+      shortcut: '⌘-',
+      action: handleZoomOut,
+    },
+    {
+      id: 'save',
+      label: 'Save Project',
+      description: 'Save your current project',
+      icon: '💾',
+      category: 'File',
+      shortcut: '⌘S',
+      action: handleSave,
+    },
+    {
+      id: 'deploy',
+      label: 'Deploy',
+      description: 'Deploy your project to production',
+      icon: '🚀',
+      category: 'File',
+      action: () => showToast('success', 'Deployment started!'),
+    },
+    {
+      id: 'toggle-sidebar',
+      label: 'Toggle Sidebar',
+      description: 'Show or hide the components panel',
+      icon: '📐',
+      category: 'View',
+      action: () => setIsSidebarOpen(!isSidebarOpen),
+    },
+    {
+      id: 'toggle-properties',
+      label: 'Toggle Properties',
+      description: 'Show or hide the properties panel',
+      icon: '⚙️',
+      category: 'View',
+      action: () => setIsPropertiesOpen(!isPropertiesOpen),
+    },
+    {
+      id: 'help',
+      label: 'Keyboard Shortcuts',
+      description: 'View all keyboard shortcuts',
+      icon: '⌨️',
+      category: 'Help',
+      action: () => setIsPaletteOpen(true),
+    },
+  ];
 
   return (
     <DndContext
@@ -107,38 +303,72 @@ function DragDropEditor() {
       <div className="h-screen flex flex-col bg-background">
         {/* Toolbar */}
         <div className="h-14 border-b border-border bg-background flex items-center justify-between px-4 shrink-0">
-          <div className="flex items-center gap-4">
-            <h1 className="text-lg font-bold">WebBuilder</h1>
+          <div className="flex items-center gap-3">
+            {/* Mobile sidebar toggle */}
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="lg:hidden p-2 rounded-lg hover:bg-muted"
+              aria-label="Toggle sidebar"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+
+            <h1 className="text-lg font-bold hidden sm:block">WebBuilder</h1>
+
             <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
-              {(['mobile', 'tablet', 'desktop'] as const).map((v) => (
+              {(['mobile', 'tablet', 'desktop'] as const).map((v, i) => (
                 <button
                   key={v}
                   onClick={() => setViewport(v)}
                   className={`px-3 py-1 rounded text-sm ${
                     state.viewport === v ? 'bg-background shadow text-primary-600' : 'text-muted-foreground hover:text-foreground'
                   }`}
+                  title={`${v} (${i + 1})`}
                 >
                   {v === 'mobile' ? '📱' : v === 'tablet' ? '📟' : '🖥️'}
                 </button>
               ))}
             </div>
-            <div className="flex items-center gap-2">
-              <Button size="sm" variant="ghost" onClick={() => setZoom(state.zoom - 0.1)}>-</Button>
+
+            <div className="hidden sm:flex items-center gap-2">
+              <Button size="sm" variant="ghost" onClick={handleZoomOut} title="Zoom out (⌘-)" className="w-8 p-0">-</Button>
               <span className="text-sm text-muted-foreground w-12 text-center">{Math.round(state.zoom * 100)}%</span>
-              <Button size="sm" variant="ghost" onClick={() => setZoom(state.zoom + 0.1)}>+</Button>
+              <Button size="sm" variant="ghost" onClick={handleZoomIn} title="Zoom in (⌘+)" className="w-8 p-0">+</Button>
             </div>
           </div>
+
           <div className="flex items-center gap-2">
-            <Button size="sm" variant="ghost" onClick={undo} disabled={state.historyIndex === 0}>↩ Undo</Button>
-            <Button size="sm" variant="ghost" onClick={redo} disabled={state.historyIndex === state.history.length - 1}>↪ Redo</Button>
-            <Button size="sm" variant="primary">🚀 Deploy</Button>
+            <Button size="sm" variant="ghost" onClick={handleUndo} disabled={state.historyIndex === 0} title="Undo (⌘Z)">
+              ↩ <span className="hidden sm:inline">Undo</span>
+            </Button>
+            <Button size="sm" variant="ghost" onClick={handleRedo} disabled={state.historyIndex === state.history.length - 1} title="Redo (⌘⇧Z)">
+              ↪ <span className="hidden sm:inline">Redo</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setIsPaletteOpen(true)}
+              title="Command Palette (⌘K)"
+            >
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span className="hidden sm:inline">⌘K</span>
+            </Button>
+            <Button size="sm" variant="primary" onClick={() => showToast('success', 'Deployment started!')}>
+              🚀 <span className="hidden sm:inline">Deploy</span>
+            </Button>
           </div>
         </div>
 
         <div className="flex-1 flex overflow-hidden">
           {/* Left Sidebar — Component Palette */}
-          <div className="w-72 border-r border-border bg-muted/30 flex flex-col shrink-0">
-            <div className="p-3 border-b border-border">
+          <div className={`w-72 border-r border-border bg-muted/30 flex-col shrink-0 overflow-hidden transition-all duration-200 ${
+            isSidebarOpen ? 'flex' : 'hidden'
+          }`}>
+            <div className="p-3 border-b border-border shrink-0">
               <h2 className="text-sm font-semibold mb-2">Components</h2>
               <Input
                 placeholder="Search..."
@@ -162,7 +392,7 @@ function DragDropEditor() {
           </div>
 
           {/* Canvas */}
-          <div className="flex-1 bg-muted/50 overflow-auto p-8">
+          <div className="flex-1 bg-muted/50 overflow-auto p-4 sm:p-8">
             <div
               className="mx-auto bg-background shadow-lg rounded-lg overflow-hidden transition-all duration-200"
               style={{ width: viewportWidth, minHeight: '800px' }}
@@ -170,10 +400,13 @@ function DragDropEditor() {
               <DropZone id="canvas-dropzone" isOver={!!overId && state.sections.length === 0}>
                 {state.sections.length === 0 ? (
                   <div className="h-full flex items-center justify-center text-muted-foreground py-32">
-                    <div className="text-center">
+                    <div className="text-center px-4">
                       <div className="text-4xl mb-4">🎨</div>
-                      <p className="text-lg font-medium mb-2">Drag components here</p>
-                      <p className="text-sm">Or click a component to add it</p>
+                      <p className="text-lg font-medium mb-2">Start building</p>
+                      <p className="text-sm mb-4">Drag components here or click to add</p>
+                      <Button size="sm" variant="secondary" onClick={() => setIsPaletteOpen(true)}>
+                        Open Command Palette (⌘K)
+                      </Button>
                     </div>
                   </div>
                 ) : (
@@ -196,9 +429,21 @@ function DragDropEditor() {
           </div>
 
           {/* Right Sidebar — Properties */}
-          <div className="w-72 border-l border-border bg-muted/30 flex flex-col shrink-0">
-            <div className="p-3 border-b border-border">
+          <div className={`w-72 border-l border-border bg-muted/30 flex-col shrink-0 overflow-hidden transition-all duration-200 ${
+            isPropertiesOpen ? 'flex' : 'hidden'
+          }`}>
+            <div className="p-3 border-b border-border shrink-0 flex items-center justify-between">
               <h2 className="text-sm font-semibold">Properties</h2>
+              {state.selectedSectionId && (
+                <div className="flex gap-1">
+                  <Button size="sm" variant="ghost" onClick={handleDuplicate} title="Duplicate (⌘D)" className="w-7 h-7 p-0">
+                    📋
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={handleDelete} title="Delete (⌫)" className="w-7 h-7 p-0 text-red-500">
+                    🗑️
+                  </Button>
+                </div>
+              )}
             </div>
             <div className="flex-1 overflow-auto p-3">
               {state.selectedSectionId ? (
@@ -209,13 +454,11 @@ function DragDropEditor() {
                       <Input value={String(value)} onChange={() => {}} />
                     </div>
                   ))}
-                  <Button size="sm" variant="danger" onClick={() => removeSection(state.selectedSectionId!)}>
-                    Remove Section
-                  </Button>
                 </div>
               ) : (
                 <div className="text-center text-muted-foreground text-sm py-8">
-                  Select a component to edit
+                  <div className="text-2xl mb-2">👆</div>
+                  <p>Select a component to edit</p>
                 </div>
               )}
             </div>
@@ -224,6 +467,13 @@ function DragDropEditor() {
 
         <ToastContainer />
       </div>
+
+      {/* Command Palette */}
+      <CommandPalette
+        commands={commands}
+        isOpen={isPaletteOpen}
+        onClose={() => setIsPaletteOpen(false)}
+      />
 
       <DragOverlay>
         {activeId ? (
@@ -239,7 +489,7 @@ function DragDropEditor() {
 export default function EditorPage() {
   return (
     <EditorProvider>
-      <DragDropEditor />
+      <EditorWithShortcuts />
     </EditorProvider>
   );
 }
@@ -253,7 +503,7 @@ function SectionRenderer({ section }: { section: any }) {
         <h1 className="text-4xl font-bold text-gray-900 mb-4">{section.props.title}</h1>
         {section.props.subtitle && <p className="text-lg text-gray-600 mb-6">{section.props.subtitle}</p>}
         {section.props.ctaText && (
-          <a href={section.props.ctaLink || '#'} className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold">
+          <a href={section.props.ctaLink || '#'} className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors">
             {section.props.ctaText}
           </a>
         )}
@@ -274,7 +524,7 @@ function SectionRenderer({ section }: { section: any }) {
         {section.props.subtitle && <p className="text-gray-600 text-center mb-12">{section.props.subtitle}</p>}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {features.map((f, i) => (
-            <div key={i} className="p-6 rounded-lg border text-center">
+            <div key={i} className="p-6 rounded-lg border text-center hover:shadow-md transition-shadow">
               <div className="text-3xl mb-3">{f.icon}</div>
               <h3 className="font-semibold mb-1">{f.title}</h3>
               <p className="text-gray-600 text-sm">{f.description}</p>

@@ -1,82 +1,70 @@
-import React, { forwardRef, useState, useRef, useEffect } from 'react';
-import { cn } from '@/lib/utils';
+'use client';
 
-export interface TooltipProps {
-  children: React.ReactNode;
+import React, { useState } from 'react';
+
+interface TooltipProps {
   content: React.ReactNode;
-  side?: 'top' | 'bottom' | 'left' | 'right';
+  position?: 'top' | 'bottom' | 'left' | 'right';
   delay?: number;
-  className?: string;
+  children: React.ReactNode;
+  show?: boolean;
+  onDismiss?: () => void;
 }
 
-const tooltipPositions = {
-  top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
-  bottom: 'top-full left-1/2 -translate-x-1/2 mt-2',
-  left: 'right-full top-1/2 -translate-y-1/2 mr-2',
-  right: 'left-full top-1/2 -translate-y-1/2 ml-2',
-};
+export function Tooltip({ content, position = 'top', delay = 0, children, show = true, onDismiss }: TooltipProps) {
+  const [isVisible, setIsVisible] = useState(false);
+  const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null);
 
-const tooltipArrows = {
-  top: 'top-full left-1/2 -translate-x-1/2 border-t-foreground',
-  bottom: 'bottom-full left-1/2 -translate-x-1/2 border-b-foreground',
-  left: 'left-full top-1/2 -translate-y-1/2 border-l-foreground',
-  right: 'right-full top-1/2 -translate-y-1/2 border-r-foreground',
-};
+  const showTooltip = () => {
+    if (delay > 0) {
+      const id = setTimeout(() => setIsVisible(true), delay);
+      setTimeoutId(id);
+    } else {
+      setIsVisible(true);
+    }
+  };
 
-export const Tooltip = forwardRef<HTMLDivElement, TooltipProps>(
-  ({ children, content, side = 'top', delay = 200, className }, ref) => {
-    const [visible, setVisible] = useState(false);
-    const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const tooltipId = React.useId();
+  const hideTooltip = () => {
+    if (timeoutId) clearTimeout(timeoutId);
+    setIsVisible(false);
+    onDismiss?.();
+  };
 
-    const show = () => {
-      timeoutRef.current = setTimeout(() => setVisible(true), delay);
-    };
-    const hide = () => {
-      if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      setVisible(false);
-    };
+  const positions = {
+    top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
+    bottom: 'top-full left-1/2 -translate-x-1/2 mt-2',
+    left: 'right-full top-1/2 -translate-y-1/2 mr-2',
+    right: 'left-full top-1/2 -translate-y-1/2 ml-2',
+  };
 
-    useEffect(() => {
-      return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
-    }, []);
+  const arrows = {
+    top: 'top-full left-1/2 -translate-x-1/2 border-t-gray-900',
+    bottom: 'bottom-full left-1/2 -translate-x-1/2 border-b-gray-900',
+    left: 'left-full top-1/2 -translate-y-1/2 border-l-gray-900',
+    right: 'right-full top-1/2 -translate-y-1/2 border-r-gray-900',
+  };
 
-    return (
-      <div ref={ref} className={cn('relative inline-flex', className)}>
-        <div
-          aria-describedby={visible ? tooltipId : undefined}
-          onMouseEnter={show}
-          onMouseLeave={hide}
-          onFocus={show}
-          onBlur={hide}
-        >
-          {children}
-        </div>
-        {visible && (
-          <div
-            id={tooltipId}
-            role="tooltip"
-            className={cn(
-              'absolute z-50 whitespace-nowrap rounded-md bg-foreground px-2.5 py-1.5',
-              'text-xs text-background shadow-md animate-fade-in',
-              'pointer-events-none',
-              tooltipPositions[side]
-            )}
-          >
-            {content}
-            <span
-              className={cn(
-                'absolute border-4 border-transparent',
-                tooltipArrows[side]
-              )}
-              aria-hidden="true"
-            />
-          </div>
-        )}
+  return (
+    <div className="relative inline-flex">
+      <div
+        onMouseEnter={showTooltip}
+        onMouseLeave={hideTooltip}
+        onFocus={showTooltip}
+        onBlur={hideTooltip}
+      >
+        {children}
       </div>
-    );
-  }
-);
+      {isVisible && show && (
+        <div
+          className={`absolute z-50 px-3 py-1.5 text-xs text-white bg-gray-900 rounded-lg shadow-lg whitespace-nowrap ${positions[position]} animate-fade-in`}
+          role="tooltip"
+        >
+          {content}
+          <span className={`absolute w-0 h-0 border-4 border-transparent ${arrows[position]}`} aria-hidden="true" />
+        </div>
+      )}
+    </div>
+  );
+}
 
-Tooltip.displayName = 'Tooltip';
 export default Tooltip;

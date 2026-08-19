@@ -1,246 +1,161 @@
-import React, { forwardRef, useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { cn } from '@/lib/utils';
+'use client';
 
-export interface CommandItem {
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts';
+
+interface Command {
   id: string;
   label: string;
   description?: string;
   icon?: React.ReactNode;
-  shortcut?: string[];
-  onSelect?: () => void;
-  disabled?: boolean;
-  group?: string;
+  category: string;
+  shortcut?: string;
+  action: () => void;
 }
 
-export interface CommandPaletteProps {
-  open: boolean;
+interface CommandPaletteProps {
+  commands: Command[];
+  isOpen: boolean;
   onClose: () => void;
-  commands: CommandItem[];
-  placeholder?: string;
-  emptyMessage?: string;
-  className?: string;
 }
 
-export const CommandPalette = forwardRef<HTMLDivElement, CommandPaletteProps>(
-  ({ open, onClose, commands, placeholder = 'Type a command...', emptyMessage = 'No results found', className }, ref) => {
-    const [search, setSearch] = useState('');
-    const [highlightedIndex, setHighlightedIndex] = useState(0);
-    const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
-    const inputRef = useRef<HTMLInputElement>(null);
-    const listRef = useRef<HTMLDivElement>(null);
+export function CommandPalette({ commands, isOpen, onClose }: CommandPaletteProps) {
+  const [query, setQuery] = useState('');
+  const [selectedIndex, setSelectedIndex] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
-    // Reset state on open
-    useEffect(() => {
-      if (open) {
-        setSearch('');
-        setHighlightedIndex(0);
-        setSelectedGroup(null);
-        setTimeout(() => inputRef.current?.focus(), 50);
-      }
-    }, [open]);
-
-    // Group commands
-    const groups = useMemo(() => {
-      const groupMap = new Map<string, CommandItem[]>();
-      commands.forEach(cmd => {
-        const group = cmd.group || 'General';
-        if (!groupMap.has(group)) groupMap.set(group, []);
-        groupMap.get(group)!.push(cmd);
+  // Fuzzy search
+  const filteredCommands = useMemo(() => {
+    if (!query.trim()) return commands;
+    const lowerQuery = query.toLowerCase();
+    return commands
+      .filter(cmd =>
+        cmd.label.toLowerCase().includes(lowerQuery) ||
+        cmd.description?.toLowerCase().includes(lowerQuery) ||
+        cmd.category.toLowerCase().includes(lowerQuery)
+      )
+      .sort((a, b) => {
+        // Prioritize exact matches
+        const aExact = a.label.toLowerCase().startsWith(lowerQuery) ? 0 : 1;
+        const bExact = b.label.toLowerCase().startsWith(lowerQuery) ? 0 : 1;
+        return aExact - bExact;
       });
-      return groupMap;
-    }, [commands]);
+  }, [query, commands]);
 
-    // Filter commands
-    const filteredGroups = useMemo(() => {
-      const result = new Map<string, CommandItem[]>();
-      groups.forEach((cmds, groupName) => {
-        const filtered = cmds.filter(cmd =>
-          cmd.label.toLowerCase().includes(search.toLowerCase()) ||
-          cmd.description?.toLowerCase().includes(search.toLowerCase())
-        );
-        if (filtered.length > 0) result.set(groupName, filtered);
-      });
-      return result;
-    }, [groups, search]);
+  // Reset state when opening
+  useEffect(() => {
+    if (isOpen) {
+      setQuery('');
+      setSelectedIndex(0);
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
+  }, [isOpen]);
 
-    // Flatten for keyboard nav
-    const flatItems = useMemo(() => {
-      const items: { group: string; item: CommandItem }[] = [];
-      filteredGroups.forEach((cmds, groupName) => {
-        cmds.forEach(cmd => items.push({ group: groupName, item: cmd }));
-      });
-      return items;
-    }, [filteredGroups]);
+  // Scroll selected item into view
+  useEffect(() => {
+    if (listRef.current) {
+      const selected = listRef.current.children[selectedIndex] as HTMLElement;
+      selected?.scrollIntoView({ block: 'nearest' });
+    }
+  }, [selectedIndex]);
 
-    // Scroll highlighted into view
-    useEffect(() => {
-      if (!listRef.current) return;
-      const el = listRef.current.querySelector(`[data-index="${highlightedIndex}"]`);
-      el?.scrollIntoView({ block: 'nearest' });
-    }, [highlightedIndex]);
+  // Keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex(i => Math.min(i + 1, filteredCommands.length - 1));
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex(i => Math.max(i - 1, 0));
+        break;
+      case 'Enter':
+        e.preventDefault();
+        filteredCommands[selectedIndex]?.action();
+        onClose();
+        break;
+      case 'Escape':
+        e.preventDefault();
+        onClose();
+        break;
+    }
+  };
 
-    const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-      switch (e.key) {
-        case 'ArrowDown':
-          e.preventDefault();
-          setHighlightedIndex(prev => Math.min(prev + 1, flatItems.length - 1));
-          break;
-        case 'ArrowUp':
-          e.preventDefault();
-          setHighlightedIndex(prev => Math.max(prev - 1, 0));
-          break;
-        case 'Enter':
-          e.preventDefault();
-          if (flatItems[highlightedIndex]) {
-            flatItems[highlightedIndex].item.onSelect?.();
-            onClose();
-          }
-          break;
-        case 'Escape':
-          e.preventDefault();
-          onClose();
-          break;
-      }
-    }, [flatItems, highlightedIndex, onClose]);
+  if (!isOpen) return null;
 
-    const handleSelect = (item: CommandItem) => {
-      item.onSelect?.();
-      onClose();
-    };
-
-    if (!open) return null;
-
-    return (
+  return (
+    <div className="fixed inset-0 z-[200] flex items-start justify-center pt-[15vh]">
+      {/* Backdrop */}
       <div
-        ref={ref}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Command palette"
-        className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]"
-      >
-        {/* Overlay */}
-        <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
-          onClick={onClose}
-          aria-hidden="true"
-        />
-        {/* Content */}
-        <div
-          className={cn(
-            'relative z-50 w-full max-w-lg overflow-hidden rounded-xl border border-border bg-background shadow-2xl',
-            'animate-scale-in',
-            className
-          )}
-          onKeyDown={handleKeyDown}
-        >
-          {/* Search */}
-          <div className="flex items-center gap-3 border-b border-border px-4 py-3">
-            <svg className="h-5 w-5 shrink-0 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-            <input
-              ref={inputRef}
-              type="text"
-              role="combobox"
-              aria-expanded={flatItems.length > 0}
-              aria-controls="command-listbox"
-              aria-activedescendant={flatItems[highlightedIndex]?.item.id}
-              value={search}
-              onChange={e => { setSearch(e.target.value); setHighlightedIndex(0); }}
-              placeholder={placeholder}
-              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground outline-none"
-            />
-            <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
-              ESC
-            </kbd>
-          </div>
-          {/* List */}
-          <div
-            ref={listRef}
-            id="command-listbox"
-            role="listbox"
-            className="max-h-80 overflow-y-auto p-2 scrollbar-thin"
-          >
-            {flatItems.length === 0 ? (
-              <div className="py-6 text-center text-sm text-muted-foreground">
-                {emptyMessage}
-              </div>
-            ) : (
-              Array.from(filteredGroups.entries()).map(([groupName, cmds]) => (
-                <div key={groupName} role="group" aria-label={groupName}>
-                  <div className="px-2 py-1.5 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                    {groupName}
-                  </div>
-                  {cmds.map(cmd => {
-                    const globalIndex = flatItems.findIndex(f => f.item.id === cmd.id);
-                    const isHighlighted = globalIndex === highlightedIndex;
-                    return (
-                      <button
-                        key={cmd.id}
-                        id={cmd.id}
-                        role="option"
-                        aria-selected={isHighlighted}
-                        aria-disabled={cmd.disabled}
-                        data-index={globalIndex}
-                        disabled={cmd.disabled}
-                        onClick={() => handleSelect(cmd)}
-                        onMouseEnter={() => setHighlightedIndex(globalIndex)}
-                        className={cn(
-                          'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition-colors',
-                          isHighlighted && 'bg-muted',
-                          cmd.disabled && 'cursor-not-allowed opacity-40',
-                          !cmd.disabled && !isHighlighted && 'hover:bg-muted'
-                        )}
-                      >
-                        {cmd.icon && (
-                          <span className="shrink-0 text-muted-foreground">{cmd.icon}</span>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="font-medium text-foreground truncate">{cmd.label}</div>
-                          {cmd.description && (
-                            <div className="text-xs text-muted-foreground truncate">{cmd.description}</div>
-                          )}
-                        </div>
-                        {cmd.shortcut && (
-                          <div className="flex shrink-0 gap-1">
-                            {cmd.shortcut.map((key, i) => (
-                              <kbd
-                                key={i}
-                                className="rounded border border-border bg-muted px-1.5 py-0.5 text-xs text-muted-foreground"
-                              >
-                                {key}
-                              </kbd>
-                            ))}
-                          </div>
-                        )}
-                      </button>
-                    );
-                  })}
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in"
+        onClick={onClose}
+      />
+
+      {/* Palette */}
+      <div className="relative w-full max-w-lg bg-background rounded-xl shadow-2xl border border-border overflow-hidden animate-scale-in">
+        {/* Search input */}
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-border">
+          <svg className="w-5 h-5 text-muted-foreground shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            ref={inputRef}
+            type="text"
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setSelectedIndex(0); }}
+            onKeyDown={handleKeyDown}
+            placeholder="Type a command..."
+            className="flex-1 bg-transparent text-sm placeholder:text-muted-foreground focus:outline-none"
+          />
+          <kbd className="px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground bg-muted rounded">ESC</kbd>
+        </div>
+
+        {/* Results list */}
+        <div ref={listRef} className="max-h-[50vh] overflow-auto py-2">
+          {filteredCommands.length === 0 ? (
+            <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+              No commands found
+            </div>
+          ) : (
+            filteredCommands.map((cmd, index) => (
+              <button
+                key={cmd.id}
+                onClick={() => { cmd.action(); onClose(); }}
+                className={`w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors ${
+                  index === selectedIndex ? 'bg-primary-50 dark:bg-primary-900/20' : 'hover:bg-muted'
+                }`}
+              >
+                {cmd.icon && <span className="text-lg shrink-0">{cmd.icon}</span>}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium truncate">{cmd.label}</div>
+                  {cmd.description && (
+                    <div className="text-xs text-muted-foreground truncate">{cmd.description}</div>
+                  )}
                 </div>
-              ))
-            )}
-          </div>
-          {/* Footer */}
-          <div className="flex items-center gap-4 border-t border-border px-4 py-2 text-xs text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <kbd className="rounded border border-border bg-muted px-1">↑</kbd>
-              <kbd className="rounded border border-border bg-muted px-1">↓</kbd>
-              navigate
-            </span>
-            <span className="flex items-center gap-1">
-              <kbd className="rounded border border-border bg-muted px-1">↵</kbd>
-              select
-            </span>
-            <span className="flex items-center gap-1">
-              <kbd className="rounded border border-border bg-muted px-1">esc</kbd>
-              close
-            </span>
-          </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">{cmd.category}</span>
+                  {cmd.shortcut && (
+                    <kbd className="px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground bg-muted rounded">
+                      {cmd.shortcut}
+                    </kbd>
+                  )}
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="flex items-center gap-4 px-4 py-2 border-t border-border bg-muted/50 text-[10px] text-muted-foreground">
+          <span>↑↓ Navigate</span>
+          <span>↵ Select</span>
+          <span>ESC Close</span>
         </div>
       </div>
-    );
-  }
-);
+    </div>
+  );
+}
 
-CommandPalette.displayName = 'CommandPalette';
 export default CommandPalette;

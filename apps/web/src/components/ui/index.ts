@@ -10,6 +10,8 @@ export type { ToastItem } from './Toast';
 export { Skeleton } from './Skeleton';
 export { Spinner } from './Spinner';
 export { Tooltip } from './Tooltip';
+export { CommandPalette } from './CommandPalette';
+export { LoadingSpinner } from './LoadingSpinner';
 
 export default {
   Button: () => import('./Button'),
@@ -21,4 +23,6 @@ export default {
   Skeleton: () => import('./Skeleton'),
   Spinner: () => import('./Spinner'),
   Tooltip: () => import('./Tooltip'),
+  CommandPalette: () => import('./CommandPalette'),
+  LoadingSpinner: () => import('./LoadingSpinner'),
 };
