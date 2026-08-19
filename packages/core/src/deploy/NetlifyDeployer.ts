@@ -123,12 +123,11 @@ export class NetlifyDeployer extends Deployer {
 
       // Add files for direct upload
       if (this.config.files && this.config.files.length > 0) {
+        const files: Record<string, string> = {};
         for (const file of this.config.files) {
-          payload.files = {
-            ...payload.files,
-            [file.path]: file.content,
-          };
+          files[file.path] = file.content;
         }
+        payload.files = files;
       }
 
       // Add title

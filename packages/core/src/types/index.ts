@@ -557,7 +557,7 @@ export interface EnvVar {
   key: string;
   value: string;
   isSecret: boolean;
-  environments: DeploymentEnvironment[];
+  environments?: DeploymentEnvironment[];
   target?: string[];
 }
 

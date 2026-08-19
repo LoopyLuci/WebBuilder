@@ -13,7 +13,7 @@ import type {
   ListDeploymentsOptions,
   LogEntry,
 } from './types.js';
-import type { DeploymentConfig, EnvVar } from '../types/index.js';
+import type { DeploymentConfig, DeploymentEnvironment, EnvVar } from '../types/index.js';
 
 /**
  * Vercel API response types
@@ -323,7 +323,7 @@ export class VercelDeployer extends Deployer {
         const payload: Record<string, unknown> = {
           key: envVar.key,
           value: envVar.value,
-          target: envVar.target || ['production', 'preview', 'development'],
+          target: envVar.target || envVar.environments?.map(e => e.toLowerCase()) || ['production', 'preview', 'development'],
           type: envVar.isSecret ? 'encrypted' : 'plain',
         };
 
@@ -370,6 +370,7 @@ export class VercelDeployer extends Deployer {
         value: e.value,
         isSecret: e.type === 'encrypted',
         target: e.target,
+        environments: e.target.map(t => t.toLowerCase()) as DeploymentEnvironment[],
       }));
     } catch {
       return [];

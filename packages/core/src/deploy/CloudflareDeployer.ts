@@ -157,18 +157,15 @@ export class CloudflareDeployer extends Deployer {
 
       // Prepare deployment payload
       const payload: Record<string, unknown> = {
-        branch: this.config.branch || 'main',
+        ...(this.config.branch ? { branch: this.config.branch } : {}),
       };
 
-      // Add files for direct upload
-      if (this.config.files && this.config.files.length > 0) {
-        payload.manifest = {};
+      if (this.config.files) {
+        const manifest: Record<string, string> = {};
         for (const file of this.config.files) {
-          payload.manifest = {
-            ...payload.manifest,
-            [file.path]: file.content,
-          };
+          manifest[file.path] = file.content;
         }
+        payload.manifest = manifest;
       }
 
       // Add environment variables
@@ -487,17 +484,19 @@ export class CloudflareDeployer extends Deployer {
         deploymentId = deployments[0].id;
       }
 
-      const response = await this.request<{ result: { steps: Array<{ name: string; status: string; started_on: string; end_on: string }> } }>(
+      const response = await this.request<{ result: { steps: Array<{ name: string; status: string; started_on: string; ended_on: string }> } }>(
         `/accounts/${this.accountId}/pages/projects/${this.projectName}/deployments/${deploymentId}/history/stages`
       );
 
       const logs: LogEntry[] = [];
-      for (const step of response.result.steps) {
-        logs.push({
-          timestamp: step.started_on,
-          message: `Stage: ${step.name} - ${step.status}`,
-          level: step.status === 'success' ? 'info' : step.status === 'failure' ? 'error' : 'debug',
-        });
+      if (response.result?.steps) {
+        for (const step of response.result.steps) {
+          logs.push({
+            timestamp: step.started_on,
+            message: `Stage: ${step.name} - ${step.status}`,
+            level: step.status === 'success' ? 'info' : step.status === 'failure' ? 'error' : 'debug',
+          });
+        }
       }
 
       return logs.slice(0, lines);
