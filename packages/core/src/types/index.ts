@@ -492,6 +492,13 @@ export interface DeploymentConfig {
   envVars: EnvVar[];
   buildCommand?: string;
   outputDir?: string;
+  // Additional fields for deployment adapters
+  name?: string;
+  files?: { path: string; content: string }[];
+  gitSource?: { type: string; repo: string; branch?: string };
+  framework?: string;
+  installCommand?: string;
+  branch?: string;
 }
 
 export interface ScalingConfig {
@@ -551,6 +558,7 @@ export interface EnvVar {
   value: string;
   isSecret: boolean;
   environments: DeploymentEnvironment[];
+  target?: string[];
 }
 
 // ─── Component System ───────────────────────────────────────────────────────

@@ -1,0 +1,29 @@
+version: '3.9'
+
+services:
+  webbuilder:
+    build:
+      context: ../..
+      dockerfile: packages/server/Dockerfile
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    volumes:
+      - webbuilder-data:/app/data
+
+  # Optional: Add nginx reverse proxy
+  nginx:
+    image: nginx:alpine
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - webbuilder
+    restart: unless-stopped
+
+volumes:
+  webbuilder-data:
