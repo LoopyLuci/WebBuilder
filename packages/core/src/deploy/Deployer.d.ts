@@ -76,21 +76,4 @@ export declare abstract class Deployer {
      */
     protected getDomain(): string;
 }
-import type { DeploymentTarget } from '../types/index.js';
-export interface DeployerOptions {
-    config: DeploymentConfig;
-    token?: string;
-    projectId?: string;
-    siteId?: string;
-    teamId?: string;
-    accountId?: string;
-    projectName?: string;
-}
-/**
- * Factory function to create the appropriate deployer based on target
- */
-export declare function createDeployer(target: DeploymentTarget, options: DeployerOptions): Deployer;
-export { VercelDeployer } from './VercelDeployer.js';
-export { NetlifyDeployer } from './NetlifyDeployer.js';
-export { CloudflareDeployer } from './CloudflareDeployer.js';
 //# sourceMappingURL=Deployer.d.ts.map

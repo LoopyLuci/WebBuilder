@@ -73,43 +73,4 @@ export class Deployer {
         return this.config.domain || this.getDefaultDomain();
     }
 }
-// ============================================================================
-// Deployer Factory
-// ============================================================================
-import { VercelDeployer } from './VercelDeployer.js';
-import { NetlifyDeployer } from './NetlifyDeployer.js';
-import { CloudflareDeployer } from './CloudflareDeployer.js';
-/**
- * Factory function to create the appropriate deployer based on target
- */
-export function createDeployer(target, options) {
-    const { config, token, projectId, siteId, teamId, accountId, projectName } = options;
-    // Resolve token from env if not provided
-    const resolvedToken = token || getTokenFromEnv(target);
-    switch (target) {
-        case 'vercel':
-            return new VercelDeployer(config, resolvedToken, projectId, teamId);
-        case 'netlify':
-            return new NetlifyDeployer(config, resolvedToken, siteId);
-        case 'cloudflare':
-            return new CloudflareDeployer(config, resolvedToken, accountId, projectName);
-        default:
-            throw new Error(`Unsupported deployment target: ${target}`);
-    }
-}
-/**
- * Get the token from environment variables based on deployment target
- */
-function getTokenFromEnv(target) {
-    const tokenMap = {
-        vercel: process.env.VERCEL_TOKEN || '',
-        netlify: process.env.NETLIFY_TOKEN || '',
-        cloudflare: process.env.CF_API_TOKEN || '',
-    };
-    return tokenMap[target] || '';
-}
-// Re-export deployer classes
-export { VercelDeployer } from './VercelDeployer.js';
-export { NetlifyDeployer } from './NetlifyDeployer.js';
-export { CloudflareDeployer } from './CloudflareDeployer.js';
 //# sourceMappingURL=Deployer.js.map
