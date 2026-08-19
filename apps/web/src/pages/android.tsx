@@ -5,8 +5,7 @@ import { AndroidProjectGenerator, generateAndroidComponents, androidComponents }
 import { Emulator } from '@/components/emulator/Emulator';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
+import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 import { showToast } from '@/editor';
 
 export default function AndroidEditor() {
@@ -16,6 +15,7 @@ export default function AndroidEditor() {
   const [generatedFiles, setGeneratedFiles] = useState<any[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<'design' | 'code' | 'emulator'>('design');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const handleGenerate = useCallback(() => {
     setIsGenerating(true);
@@ -64,39 +64,51 @@ export default function AndroidEditor() {
   return (
     <div className="h-screen flex flex-col bg-background">
       {/* Header */}
-      <div className="bg-background border-b px-6 py-3 flex items-center justify-between shrink-0">
-        <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold">Android Builder</h1>
+      <div className="bg-background border-b px-4 sm:px-6 py-3 flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2 sm:gap-4">
+          {/* Mobile sidebar toggle */}
+          <button
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            className="lg:hidden p-2 rounded-lg hover:bg-muted"
+            aria-label="Toggle sidebar"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <h1 className="text-lg font-bold hidden sm:block">Android Builder</h1>
           <Input
             value={projectName}
             onChange={(e) => setProjectName(e.target.value)}
             placeholder="Project name"
-            className="w-48"
+            className="w-32 sm:w-48"
           />
           <Input
             value={packageName}
             onChange={(e) => setPackageName(e.target.value)}
             placeholder="com.example.app"
-            className="w-64 font-mono text-sm"
+            className="w-48 sm:w-64 font-mono text-sm hidden sm:block"
           />
         </div>
         <div className="flex gap-2">
           <Button
             onClick={handleGenerate}
             loading={isGenerating}
+            shortcut="⌘⏎"
           >
-            ⚡ Generate Project
+            <span className="hidden sm:inline">Generate</span>
+            <span className="sm:hidden">⚡</span>
           </Button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="bg-background border-b px-6 flex gap-4 shrink-0">
+      <div className="bg-background border-b px-4 sm:px-6 flex gap-4 shrink-0 overflow-x-auto">
         {(['design', 'code', 'emulator'] as const).map(tab => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className={`py-3 text-sm font-medium border-b-2 ${
+            className={`py-3 text-sm font-medium border-b-2 whitespace-nowrap ${
               activeTab === tab
                 ? 'border-primary-600 text-primary-600'
                 : 'border-transparent text-muted-foreground hover:text-foreground'
@@ -112,14 +124,16 @@ export default function AndroidEditor() {
         {activeTab === 'design' && (
           <>
             {/* Component Library */}
-            <div className="w-72 bg-muted/30 border-r overflow-auto p-4 shrink-0">
+            <div className={`w-72 bg-muted/30 border-r overflow-auto p-4 shrink-0 transition-all duration-200 ${
+              isSidebarOpen ? 'block' : 'hidden lg:block'
+            }`}>
               <h3 className="font-semibold mb-3">Components</h3>
               <div className="space-y-1">
                 {androidComponents.map(comp => (
                   <button
                     key={comp.id}
                     onClick={() => toggleComponent(comp.id)}
-                    className={`w-full text-left px-3 py-2 rounded text-sm ${
+                    className={`w-full text-left px-3 py-2 rounded text-sm transition-colors ${
                       selectedComponents.includes(comp.id)
                         ? 'bg-primary-100 text-primary-700'
                         : 'hover:bg-muted'
@@ -133,7 +147,12 @@ export default function AndroidEditor() {
             </div>
 
             {/* Preview */}
-            <div className="flex-1 flex items-center justify-center p-8 overflow-auto">
+            <div className="flex-1 flex items-center justify-center p-4 sm:p-8 overflow-auto relative">
+              {isGenerating && (
+                <div className="absolute inset-0 bg-background/80 flex items-center justify-center z-10">
+                  <LoadingSpinner size="lg" label="Generating project..." />
+                </div>
+              )}
               <Emulator
                 projectName={projectName}
                 packageName={packageName}
@@ -145,14 +164,14 @@ export default function AndroidEditor() {
 
         {activeTab === 'code' && (
           <div className="flex-1 flex">
-            <div className="w-64 bg-muted/30 border-r overflow-auto shrink-0">
+            <div className="w-64 bg-muted/30 border-r overflow-auto shrink-0 hidden sm:block">
               <div className="p-3 border-b">
                 <h3 className="font-semibold text-sm">Files</h3>
               </div>
               <div className="p-2">
                 {generatedFiles.length > 0 ? (
                   generatedFiles.map((file, i) => (
-                    <div key={i} className="px-2 py-1 text-xs font-mono text-muted-foreground hover:bg-muted rounded">
+                    <div key={i} className="px-2 py-1 text-xs font-mono text-muted-foreground hover:bg-muted rounded cursor-pointer">
                       {file.path}
                     </div>
                   ))
@@ -172,7 +191,7 @@ export default function AndroidEditor() {
         )}
 
         {activeTab === 'emulator' && (
-          <div className="flex-1 flex items-center justify-center p-8 overflow-auto">
+          <div className="flex-1 flex items-center justify-center p-4 sm:p-8 overflow-auto">
             <Emulator
               projectName={projectName}
               packageName={packageName}
