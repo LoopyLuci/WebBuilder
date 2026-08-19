@@ -26,6 +26,7 @@ import { DraggableComponent } from '@/components/editor/DraggableComponent';
 import { SortableSection } from '@/components/editor/SortableSection';
 import { DropZone } from '@/components/editor/DropZone';
 import { ProjectManager } from '@/components/editor/ProjectManager';
+import { CollaborationPanel } from '@/components/editor/CollaborationPanel';
 import { DeployModal } from '@/components/editor/DeployModal';
 import { LivePreview } from '@/components/editor/LivePreview';
 import { showToast } from '@/editor';
@@ -55,6 +56,7 @@ function EditorWithPersistence() {
   const [overId, setOverId] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [isDeployOpen, setIsDeployOpen] = useState(false);
+  const [isCollaborationOpen, setIsCollaborationOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isPropertiesOpen, setIsPropertiesOpen] = useState(true);
@@ -411,6 +413,11 @@ function EditorWithPersistence() {
                 👁️ <span className="hidden sm:inline ml-1">Preview</span>
               </Button>
             </Tooltip>
+            <Tooltip content="Collaborate" position="bottom">
+              <Button size="sm" variant="ghost" onClick={() => setIsCollaborationOpen(true)}>
+                👥 <span className="hidden sm:inline ml-1">Team</span>
+              </Button>
+            </Tooltip>
             <Tooltip content="Deploy" position="bottom">
               <Button size="sm" variant="primary" onClick={() => setIsDeployOpen(true)}>
                 🚀
@@ -578,6 +585,12 @@ function EditorWithPersistence() {
       <DeployModal
         isOpen={isDeployOpen}
         onClose={() => setIsDeployOpen(false)}
+      />
+
+      {/* Collaboration Panel */}
+      <CollaborationPanel
+        isOpen={isCollaborationOpen}
+        onClose={() => setIsCollaborationOpen(false)}
       />
 
       <DragOverlay>
