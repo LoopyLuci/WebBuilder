@@ -1,6 +1,10 @@
+*.js
+*.d.ts
+*.js.map
+*.d.ts.map
+dist
 node_modules
 .next
-dist
 .turbo
 *.log
 .DS_Store

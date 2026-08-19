@@ -1,0 +1,7 @@
+'use client';
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+export function NavigationBar({ onBack, onHome, onRecent }) {
+    return (_jsxs("div", { className: "flex items-center justify-around px-8 py-2 bg-gray-100 border-t border-gray-200", children: [_jsx("button", { onClick: onBack, className: "p-2 rounded-full hover:bg-gray-200 active:bg-gray-300 transition-colors", "aria-label": "Back", children: _jsx("svg", { className: "w-5 h-5 text-gray-700", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: _jsx("path", { strokeLinecap: "round", strokeLinejoin: "round", strokeWidth: 2, d: "M15 19l-7-7 7-7" }) }) }), _jsx("button", { onClick: onHome, className: "p-2 rounded-full hover:bg-gray-200 active:bg-gray-300 transition-colors", "aria-label": "Home", children: _jsx("svg", { className: "w-5 h-5 text-gray-700", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: _jsx("circle", { cx: "12", cy: "12", r: "9", strokeWidth: 2 }) }) }), _jsx("button", { onClick: onRecent, className: "p-2 rounded-full hover:bg-gray-200 active:bg-gray-300 transition-colors", "aria-label": "Recent apps", children: _jsx("svg", { className: "w-5 h-5 text-gray-700", fill: "none", viewBox: "0 0 24 24", stroke: "currentColor", children: _jsx("rect", { x: "4", y: "4", width: "16", height: "16", rx: "2", strokeWidth: 2 }) }) })] }));
+}
+export default NavigationBar;
+//# sourceMappingURL=NavigationBar.js.map

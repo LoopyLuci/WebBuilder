@@ -50,8 +50,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
     const errorId = `${selectId}-error`;
     const helperId = `${selectId}-helper`;
 
-    const baseStyles =
-      'block rounded-md border transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed appearance-none bg-[url("data:image/svg+xml;charset=UTF-8,%3csvgxmlns='http://www.w3.org/2000/svg'viewBox='0 0 24 24'fill='none'stroke='%236b7280'stroke-width='2'stroke-linecap='round'stroke-linejoin='round'%3e%3cpolylinepoints='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")] bg-[length:1.25rem] bg-[right_0.5rem_center] bg-no-repeat';
+    const baseStyles = `block rounded-md border transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0 disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed appearance-none bg-no-repeat bg-[length:1.25rem] bg-[right_0.5rem_center]`;
 
     const stateStyles = error
       ? 'border-red-500 focus:ring-red-500 focus:border-red-500'

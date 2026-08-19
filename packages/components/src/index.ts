@@ -21,6 +21,13 @@ export { default as Navbar } from './patterns/navbar.js';
 export { default as Footer } from './patterns/footer.js';
 export { default as Sidebar } from './patterns/sidebar.js';
 
+// Data components
+export { default as Table } from './data/table.js';
+export { default as List } from './data/list.js';
+export { default as Timeline } from './data/timeline.js';
+export { default as Chart } from './data/chart.js';
+export { default as Calendar } from './data/calendar.js';
+
 export { default as LandingPage } from './templates/landing.js';
 export { default as DashboardLayout } from './templates/dashboard.js';
 

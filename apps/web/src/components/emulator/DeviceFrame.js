@@ -1,0 +1,7 @@
+'use client';
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+export function DeviceFrame({ children, width = 375, height = 700, name = 'Phone' }) {
+    return (_jsxs("div", { className: "flex flex-col items-center", children: [_jsxs("div", { className: "relative bg-gray-900 rounded-[3rem] shadow-2xl border-4 border-gray-800 p-3", style: { width: width + 24, height: height + 48 }, children: [_jsx("div", { className: "absolute -left-1 top-24 w-1 h-8 bg-gray-700 rounded-l" }), _jsx("div", { className: "absolute -left-1 top-36 w-1 h-12 bg-gray-700 rounded-l" }), _jsx("div", { className: "absolute -left-1 top-52 w-1 h-12 bg-gray-700 rounded-l" }), _jsx("div", { className: "absolute -right-1 top-32 w-1 h-16 bg-gray-700 rounded-r" }), _jsxs("div", { className: "relative w-full h-full bg-black rounded-[2.5rem] overflow-hidden", children: [_jsxs("div", { className: "absolute top-2 left-1/2 -translate-x-1/2 w-20 h-6 bg-black rounded-full z-20 flex items-center justify-center gap-2", children: [_jsx("div", { className: "w-2 h-2 rounded-full bg-gray-800 border border-gray-700" }), _jsx("div", { className: "w-3 h-3 rounded-full bg-gray-800 border border-gray-700" })] }), _jsx("div", { className: "w-full h-full overflow-hidden bg-white", children: children })] })] }), name && (_jsx("p", { className: "mt-4 text-sm font-medium text-muted-foreground", children: name }))] }));
+}
+export default DeviceFrame;
+//# sourceMappingURL=DeviceFrame.js.map
