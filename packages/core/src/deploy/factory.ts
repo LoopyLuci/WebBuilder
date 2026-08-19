@@ -6,8 +6,7 @@ import { Deployer } from './Deployer.js';
 import { VercelDeployer } from './VercelDeployer.js';
 import { NetlifyDeployer } from './NetlifyDeployer.js';
 import { CloudflareDeployer } from './CloudflareDeployer.js';
-import type { DeploymentTarget } from '../types/index.js';
-import type { DeploymentConfig } from '../types/index.js';
+import type { DeploymentConfig, DeploymentTarget } from '../types/index.js';
 
 export interface DeployerOptions {
   config: DeploymentConfig;
@@ -19,13 +18,8 @@ export interface DeployerOptions {
   projectName?: string;
 }
 
-/**
- * Factory function to create the appropriate deployer based on target
- */
 export function createDeployer(target: DeploymentTarget, options: DeployerOptions): Deployer {
   const { config, token, projectId, siteId, teamId, accountId, projectName } = options;
-
-  // Resolve token from env if not provided
   const resolvedToken = token || getTokenFromEnv(target);
 
   switch (target) {
@@ -40,15 +34,11 @@ export function createDeployer(target: DeploymentTarget, options: DeployerOption
   }
 }
 
-/**
- * Get the token from environment variables based on deployment target
- */
 function getTokenFromEnv(target: DeploymentTarget): string {
   const tokenMap: Record<string, string> = {
     vercel: process.env.VERCEL_TOKEN || '',
     netlify: process.env.NETLIFY_TOKEN || '',
     cloudflare: process.env.CF_API_TOKEN || '',
   };
-
   return tokenMap[target] || '';
 }

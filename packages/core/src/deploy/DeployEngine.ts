@@ -18,7 +18,8 @@ import type {
 } from '../types/index.js';
 
 import type { DesignValidationResult } from '../design/index.js';
-import { createDeployer, Deployer } from './Deployer.js';
+import { createDeployer } from './factory.js';
+import { Deployer } from './Deployer.js';
 import type { LogEntry, DeployResult, DeploymentStatus, DeploymentInfo, EnvVarResult, ListDeploymentsOptions } from './types.js';
 
 type ValidationResult = DesignValidationResult;
