@@ -20,6 +20,7 @@ import {
   type ProjectManager,
   type GeneratedProject,
 } from '@webbuilder/core';
+import { AndroidProjectGenerator, generateAndroidComponents, androidComponents, createEmulator, devicePresets } from '@webbuilder/android';
 
 export class WebBuilderMCPServer {
   private server: McpServer;
@@ -42,6 +43,7 @@ export class WebBuilderMCPServer {
     this.registerDeployTools();
     this.registerTestingTools();
     this.registerOptimizationTools();
+    this.registerAndroidTools();
   }
 
   private registerProjectTools(): void {
@@ -431,6 +433,107 @@ export class WebBuilderMCPServer {
             projectId,
             suggestions: [],
           }, null, 2),
+        }],
+      })
+    );
+  }
+
+  private registerAndroidTools(): void {
+    this.server.registerTool(
+      'webbuilder/android/create',
+      {
+        description: 'Create a new Android project with Kotlin + Jetpack Compose',
+        inputSchema: {
+          name: z.string().describe('App name'),
+          packageName: z.string().describe('Package name (e.g., com.example.app)'),
+        },
+      },
+      async ({ name, packageName }) => {
+        try {
+          const config = {
+            name,
+            packageName,
+            minSdk: 24,
+            targetSdk: 34,
+            compileSdk: 34,
+            buildToolsVersion: '34.0.0',
+            kotlinVersion: '2.0.0',
+            composeVersion: '2024.06.00',
+            activities: [{
+              name: 'MainActivity',
+              packageName,
+              title: name,
+              layout: 'activity_main',
+              isMainLauncher: true,
+              isComposeActivity: true,
+              composables: ['MainScreen'],
+            }],
+            permissions: ['android.permission.INTERNET'] as any,
+            dependencies: [],
+            features: [],
+          };
+
+          const generator = new AndroidProjectGenerator(config);
+          const project = generator.generate();
+
+          const outputDir = join(tmpdir(), 'webbuilder-android', packageName.replace(/\./g, '-'));
+          for (const file of project.files) {
+            const filePath = join(outputDir, file.path);
+            const dir = join(filePath, '..');
+            if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+            writeFileSync(filePath, file.content);
+          }
+
+          return {
+            content: [{
+              type: 'text' as const,
+              text: JSON.stringify({
+                success: true,
+                projectName: name,
+                packageName,
+                outputDir,
+                filesGenerated: project.files.length,
+                instructions: project.instructions,
+              }, null, 2),
+            }],
+          };
+        } catch (error: any) {
+          return { content: [{ type: 'text' as const, text: JSON.stringify({ success: false, error: error.message }) }] };
+        }
+      }
+    );
+
+    this.server.registerTool(
+      'webbuilder/android/components',
+      {
+        description: 'List available Android UI components',
+        inputSchema: {},
+      },
+      async () => ({
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({
+            components: androidComponents.map(c => ({
+              id: c.id,
+              name: c.name,
+              category: c.category,
+              description: c.description,
+            })),
+          }, null, 2),
+        }],
+      })
+    );
+
+    this.server.registerTool(
+      'webbuilder/android/devices',
+      {
+        description: 'List available Android device presets for the emulator',
+        inputSchema: {},
+      },
+      async () => ({
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({ devices: devicePresets }, null, 2),
         }],
       })
     );
