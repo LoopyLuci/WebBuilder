@@ -132,12 +132,7 @@ export class CodeGenerator {
   }
 
   private generateLayout(): FileChange {
-    const hasHeader = this.spec.structure.globals.some((g: any) => g.position === 'header');
-    const hasFooter = this.spec.structure.globals.some((g: any) => g.position === 'footer');
-    let content = `'use client';\nimport './globals.css';\n`;
-    if (hasHeader) content += `import { Header } from '@/components/Header';\n`;
-    if (hasFooter) content += `import { Footer } from '@/components/Footer';\n`;
-    content += `\nexport const metadata = { title: '${this.spec.name}', description: '${this.spec.description}' };\n\nexport default function RootLayout({ children }: { children: React.ReactNode }) {\n  return (\n    <html lang="en">\n      <body>\n        ${hasHeader ? '<Header />\n        ' : ''}<main>{children}</main>${hasFooter ? '\n        <Footer />' : ''}\n      </body>\n    </html>\n  );\n}\n`;
+    let content = `'use client';\nimport './globals.css';\n\nexport const metadata = { title: '${this.spec.name}', description: '${this.spec.description}' };\n\nexport default function RootLayout({ children }: { children: React.ReactNode }) {\n  return (\n    <html lang="en">\n      <body>\n        <main>{children}</main>\n      </body>\n    </html>\n  );\n}\n`;
     return { path: 'src/app/layout.tsx', content, action: 'create' };
   }
 
@@ -158,7 +153,18 @@ export class CodeGenerator {
       compImports.add(`import { ${compName} } from '@/components/${compName}';`);
       compUsage.push(this.generateSectionJSX(section));
     }
-    const content = `'use client';\n\n${Array.from(compImports).join('\n')}\n\nexport default function ${this.toPascalCase(page.name)}Page() {\n  return (\n    <div>\n${compUsage.join('\n')}\n    </div>\n  );\n}\n`;
+    const content = `'use client';
+
+${Array.from(compImports).join('\n')}
+
+export default function ${this.toPascalCase(page.name)}Page() {
+  return (
+    <div>
+${compUsage.join('\n')}
+    </div>
+  );
+}
+`;
     const slug = page.path === '/' ? 'index' : page.path.replace(/^\//, '').replace(/\//g, '-');
     return { path: `src/pages/${slug}.tsx`, content, action: 'create' };
   }
@@ -171,7 +177,29 @@ export class CodeGenerator {
 
   private generateComponentFile(componentId: string): FileChange {
     const compName = this.toPascalCase(componentId);
-    const content = `'use client';\n\nexport interface ${compName}Props {\n  // Add props here\n}\n\nexport function ${compName}(props: ${compName}Props) {\n  return (\n    <div>\n      {/* ${compName} component */}\n    </div>\n  );\n}\n`;
+    const content = `'use client';
+
+export interface ${compName}Props {
+  title?: string;
+  subtitle?: string;
+  className?: string;
+  [key: string]: any;
+}
+
+export function ${compName}({ title = '${compName}', subtitle, className = '', ...props }: ${compName}Props) {
+  return (
+    <section className={\`py-16 px-8 \${className}\`}>
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-3xl font-bold text-center mb-4">{title}</h2>
+        {subtitle && <p className="text-gray-600 text-center mb-12">{subtitle}</p>}
+        <div className="text-center text-gray-400">
+          {/* ${compName} content */}
+        </div>
+      </div>
+    </section>
+  );
+}
+`;
     return { path: `src/components/${compName}.tsx`, content, action: 'create' };
   }
 

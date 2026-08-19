@@ -14,7 +14,9 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean",
-    "cli": "pnpm --filter @webbuilder/cli cli"
+    "cli": "pnpm --filter @webbuilder/cli cli",
+    "ci": "bash scripts/ci-cd.sh",
+    "e2e": "node scripts/demo-e2e.cjs"
   },
   "devDependencies": {
     "turbo": "^2.0.0",
