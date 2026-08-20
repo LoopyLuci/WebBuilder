@@ -12,6 +12,9 @@ export * from './deploy/index.js';
 export * from './observe/index.js';
 export * from './project-manager/index.js';
 export * from './codegen/index.js';
+export * from './plugins/index.js';
+export * from './generators/index.js';
+export * from './assets/index.js';
 
 import { IntentParser, parseIntent } from './intent/index.js';
 import { ContextManager, createContext } from './context/index.js';

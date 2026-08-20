@@ -1,999 +1,980 @@
-// ============================================================================
-// WebBuilder Core — Type Definitions
-// Complete type system for the agentic web building platform
-// ============================================================================
-
-// ─── Primitive Types ────────────────────────────────────────────────────────
-
-export type ID = string;
-export type Timestamp = string; // ISO 8601
-export type SemanticVersion = string;
-export type URL = string;
-export type JSONValue = string | number | boolean | null | JSONValue[] | { [key: string]: JSONValue };
-
-// ─── Constraint System ──────────────────────────────────────────────────────
-
-export type ConstraintType =
-  | 'budget'
-  | 'timeline'
-  | 'tech-stack'
-  | 'accessibility'
-  | 'performance'
-  | 'security'
-  | 'seo'
-  | 'browser-support'
-  | 'custom';
-
-export interface Constraint {
-  id: ID;
-  type: ConstraintType;
-  name: string;
-  description: string;
-  value: JSONValue;
-  priority: 'low' | 'medium' | 'high' | 'critical';
-  enabled: boolean;
-}
-
-// ─── Reference System ───────────────────────────────────────────────────────
-
-export type ReferenceType = 'url' | 'image' | 'document' | 'component' | 'design';
-
-export interface Reference {
-  id: ID;
-  type: ReferenceType;
-  url?: URL;
-  description: string;
-  tags: string[];
-  extractedPatterns?: DesignPattern[];
-}
-
-export interface DesignPattern {
-  id: ID;
-  name: string;
-  category: 'layout' | 'typography' | 'color' | 'interaction' | 'animation';
-  description: string;
-  cssProperties: Record<string, string>;
-}
-
-// ─── Intent System ──────────────────────────────────────────────────────────
-
-export interface Intent {
-  id: ID;
-  description: string;
-  goals: string[];
-  constraints: Constraint[];
-  references: Reference[];
-  audience: string;
-  purpose: string;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-}
-
-export interface ParsedIntent {
-  intent: Intent;
-  spec: Partial<ProjectSpec>;
-  clarificationsNeeded: ClarificationQuestion[];
-  confidence: number;
-}
-
-export interface ClarificationQuestion {
-  id: ID;
-  question: string;
-  options?: string[];
-  category: string;
-  required: boolean;
-}
-
-// ─── Project Specification ──────────────────────────────────────────────────
-
-export interface ProjectSpec {
-  id: ID;
-  version: SemanticVersion;
-  name: string;
-  description: string;
-  intent: Intent;
-  structure: PageMap;
-  design: DesignSystem;
-  functionality: FeatureSet;
-  deployment: DeploymentConfig;
-  metadata: ProjectMetadata;
-}
-
-export interface ProjectMetadata {
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-  createdBy: ID;
-  agents: AgentContribution[];
-  version: SemanticVersion;
-  tags: string[];
-}
-
-export interface AgentContribution {
-  agentId: ID;
-  agentType: string;
-  action: string;
-  timestamp: Timestamp;
-  details: string;
-}
-
-// ─── Page Map ───────────────────────────────────────────────────────────────
-
-export interface PageMap {
-  pages: Page[];
-  navigation: NavigationItem[];
-  globals: GlobalSection[];
-}
-
-export interface Page {
-  id: ID;
-  name: string;
-  path: string;
-  title: string;
-  description: string;
-  sections: Section[];
-  meta: PageMeta;
-  layout?: string;
-}
-
-export interface Section {
-  id: ID;
-  name: string;
-  component: ID;
-  props: Record<string, JSONValue>;
-  children: Section[];
-  responsive: Record<string, string>;
-}
-
-export interface PageMeta {
-  title: string;
-  description: string;
-  ogImage?: URL;
-  keywords: string[];
-  canonical?: URL;
-  noIndex: boolean;
-}
-
-export interface NavigationItem {
-  id: ID;
-  label: string;
-  path: string;
-  children: NavigationItem[];
-  external: boolean;
-}
-
-export interface GlobalSection {
-  id: ID;
-  name: string;
-  component: ID;
-  position: 'header' | 'footer' | 'sidebar';
-  pages: string[] | 'all';
-}
-
-// ─── Design System ──────────────────────────────────────────────────────────
-
-export interface DesignSystem {
-  id: ID;
-  name: string;
-  tokens: DesignTokens;
-  themes: Theme[];
-  responsive: ResponsiveConfig;
-  animations: AnimationLibrary;
-  typography: TypographySystem;
-  color: ColorSystem;
-  spacing: SpacingSystem;
-  elevation: ElevationSystem;
-  motion: MotionSystem;
-}
-
-export interface DesignTokens {
-  colors: TokenSet;
-  fonts: TokenSet;
-  spacing: TokenSet;
-  sizing: TokenSet;
-  borders: TokenSet;
-  shadows: TokenSet;
-  radii: TokenSet;
-  opacity: TokenSet;
-  semantic: SemanticTokens;
-  components: Record<ID, TokenSet>;
-}
-
-export interface TokenSet {
-  [key: string]: TokenValue;
-}
-
-export interface TokenValue {
-  value: string;
-  type: 'color' | 'dimension' | 'font' | 'number' | 'string' | 'boolean';
-  description: string;
-  ref?: string; // Reference to another token
-}
-
-export interface SemanticTokens {
-  primary: TokenReference;
-  secondary: TokenReference;
-  success: TokenReference;
-  warning: TokenReference;
-  error: TokenReference;
-  info: TokenReference;
-  surface: TokenReference;
-  text: TokenReference;
-  background: TokenReference;
-}
-
-export interface TokenReference {
-  value: string;
-  description: string;
-}
-
-export interface Theme {
-  id: ID;
-  name: string;
-  mode: 'light' | 'dark' | 'high-contrast';
-  tokens: Partial<DesignTokens>;
-  default: boolean;
-}
-
-export interface ResponsiveConfig {
-  breakpoints: Breakpoint[];
-  defaultBreakpoint: string;
-  strategy: 'mobile-first' | 'desktop-first';
-}
-
-export interface Breakpoint {
-  name: string;
-  minWidth?: number;
-  maxWidth?: number;
-  baseFontSize?: number;
-}
-
-export interface AnimationLibrary {
-  presets: AnimationPreset[];
-  transitions: TransitionPreset[];
-  keyframes: KeyframeSet[];
-}
-
-export interface AnimationPreset {
-  id: ID;
-  name: string;
-  duration: string;
-  easing: string;
-  properties: Record<string, string>;
-}
-
-export interface TransitionPreset {
-  id: ID;
-  name: string;
-  property: string;
-  duration: string;
-  easing: string;
-}
-
-export interface KeyframeSet {
-  id: ID;
-  name: string;
-  keyframes: { offset: number; properties: Record<string, string> }[];
-}
-
-export interface TypographySystem {
-  fontFamilies: FontFamily[];
-  fontSizes: TypeScale;
-  fontWeights: Record<string, number>;
-  lineHeights: Record<string, number>;
-  letterSpacings: Record<string, string>;
-  textStyles: TextStyle[];
-}
-
-export interface FontFamily {
-  name: string;
-  family: string;
-  fallback: string[];
-  category: 'serif' | 'sans-serif' | 'monospace' | 'display';
-}
-
-export interface TypeScale {
-  xs: string;
-  sm: string;
-  base: string;
-  lg: string;
-  xl: string;
-  '2xl': string;
-  '3xl': string;
-  '4xl': string;
-  '5xl': string;
-  '6xl': string;
-}
-
-export interface TextStyle {
-  id: ID;
-  name: string;
-  fontFamily: string;
-  fontSize: string;
-  fontWeight: number;
-  lineHeight: number;
-  letterSpacing: string;
-  textTransform?: string;
-}
-
-export interface ColorSystem {
-  palette: ColorPalette;
-  gradients: GradientSet[];
-}
-
-export interface ColorPalette {
-  [name: string]: ColorShades;
-}
-
-export interface ColorShades {
-  50: string;
-  100: string;
-  200: string;
-  300: string;
-  400: string;
-  500: string;
-  600: string;
-  700: string;
-  800: string;
-  900: string;
-  950: string;
-}
-
-export interface GradientSet {
-  id: ID;
-  name: string;
-  type: 'linear' | 'radial' | 'conic';
-  stops: { color: string; position: number }[];
-  angle?: number;
-}
-
-export interface SpacingSystem {
-  scale: Record<string, string>;
-  grid: GridConfig;
-}
-
-export interface GridConfig {
-  columns: number;
-  gutter: string;
-  margin: string;
-  maxWidth: string;
-}
-
-export interface ElevationSystem {
-  levels: ElevationLevel[];
-}
-
-export interface ElevationLevel {
-  name: string;
-  shadow: string;
-  zIndex: number;
-}
-
-export interface MotionSystem {
-  duration: Record<string, string>;
-  easing: Record<string, string>;
-  spring: Record<string, SpringConfig>;
-}
-
-export interface SpringConfig {
-  stiffness: number;
-  damping: number;
-  mass: number;
-}
-
-// ─── Feature Set ────────────────────────────────────────────────────────────
-
-export interface FeatureSet {
-  features: Feature[];
-  integrations: Integration[];
-  workflows: WorkflowDefinition[];
-  dataModels: DataModel[];
-}
-
-export interface Feature {
-  id: ID;
-  name: string;
-  description: string;
-  type: 'ui' | 'logic' | 'data' | 'auth' | 'payment' | 'analytics' | 'custom';
-  component?: ID;
-  props: Record<string, JSONValue>;
-  enabled: boolean;
-  dependencies: ID[];
-}
-
-export interface Integration {
-  id: ID;
-  name: string;
-  type: 'api' | 'database' | 'auth' | 'payment' | 'analytics' | 'storage' | 'email' | 'search';
-  provider: string;
-  config: Record<string, JSONValue>;
-  enabled: boolean;
-}
-
-export interface WorkflowDefinition {
-  id: ID;
-  name: string;
-  description: string;
-  trigger: Trigger;
-  steps: WorkflowStep[];
-  errorHandling: ErrorStrategy;
-  retryPolicy?: RetryPolicy;
-}
-
-export interface Trigger {
-  type: 'event' | 'schedule' | 'manual' | 'webhook' | 'condition';
-  config: Record<string, JSONValue>;
-}
-
-export interface WorkflowStep {
-  id: ID;
-  name: string;
-  action: string;
-  config: Record<string, JSONValue>;
-  onError?: string; // Step ID to go to on error
-}
-
-export interface ErrorStrategy {
-  type: 'stop' | 'continue' | 'retry' | 'fallback';
-  fallbackStep?: string;
-  notifyOnError: boolean;
-}
-
-export interface RetryPolicy {
-  maxAttempts: number;
-  backoff: 'linear' | 'exponential';
-  initialDelay: number;
-  maxDelay: number;
-}
-
-export interface DataModel {
-  id: ID;
-  name: string;
-  fields: DataField[];
-  relationships: Relationship[];
-}
-
-export interface DataField {
-  name: string;
-  type: 'string' | 'number' | 'boolean' | 'date' | 'json' | 'reference';
-  required: boolean;
-  unique: boolean;
-  defaultValue?: JSONValue;
-  validation?: FieldValidation;
-}
-
-export interface FieldValidation {
-  min?: number;
-  max?: number;
-  pattern?: string;
-  message?: string;
-}
-
-export interface Relationship {
-  type: 'one-to-one' | 'one-to-many' | 'many-to-many';
-  model: ID;
-  field: string;
-}
-
-// ─── Deployment Config ──────────────────────────────────────────────────────
-
-export type DeploymentTarget = 'vercel' | 'netlify' | 'aws' | 'gcp' | 'azure' | 'cloudflare' | 'custom' | 'docker';
-export type DeploymentEnvironment = 'development' | 'staging' | 'production';
-
-export interface DeploymentConfig {
-  target: DeploymentTarget;
-  domain?: string;
-  environment: DeploymentEnvironment;
-  scaling: ScalingConfig;
-  cdn: CDNConfig;
-  ssl: SSLConfig;
-  monitoring: MonitoringConfig;
-  rollback: RollbackConfig;
-  preview: PreviewConfig;
-  envVars: EnvVar[];
-  buildCommand?: string;
-  outputDir?: string;
-  // Additional fields for deployment adapters
-  name?: string;
-  files?: { path: string; content: string }[];
-  gitSource?: { type: string; repo: string; branch?: string };
-  framework?: string;
-  installCommand?: string;
-  branch?: string;
-}
-
-export interface ScalingConfig {
-  minInstances: number;
-  maxInstances: number;
-  autoScale: boolean;
-  targetCPU?: number;
-  targetMemory?: number;
-}
-
-export interface CDNConfig {
-  enabled: boolean;
-  provider?: string;
-  caching: CacheConfig;
-}
-
-export interface CacheConfig {
-  staticAssets: string;
-  html: string;
-  api: string;
-}
-
-export interface SSLConfig {
-  enabled: boolean;
-  provider?: 'lets-encrypt' | 'custom';
-  certPath?: string;
-  keyPath?: string;
-}
-
-export interface MonitoringConfig {
-  enabled: boolean;
-  provider?: string;
-  uptimeChecks: boolean;
-  alerting: AlertConfig[];
-}
-
-export interface AlertConfig {
-  type: 'email' | 'slack' | 'webhook' | 'sms';
-  target: string;
-  conditions: string[];
-}
-
-export interface RollbackConfig {
-  enabled: boolean;
-  automaticOnFailure: boolean;
-  maxVersions: number;
-}
-
-export interface PreviewConfig {
-  enabled: boolean;
-  autoDeleteDays: number;
-  requireAuth: boolean;
-}
-
-export interface EnvVar {
-  key: string;
-  value: string;
-  isSecret: boolean;
-  environments?: DeploymentEnvironment[];
-  target?: string[];
-}
-
-// ─── Component System ───────────────────────────────────────────────────────
-
-export type Framework = 'react' | 'vue' | 'svelte' | 'angular' | 'vanilla' | 'solid' | 'qwik';
-
-export interface Component {
-  id: ID;
-  name: string;
-  description: string;
-  version: SemanticVersion;
-  spec: ComponentSpec;
-  implementations: Partial<Record<Framework, FrameworkImplementation>>;
-  props: PropSchema[];
-  slots: SlotSchema[];
-  events: EventSchema[];
-  styles: StyleSchema;
-  accessibility: A11ySchema;
-  performance: PerformanceMetrics;
-  dependencies: Dependency[];
-  extensions: ExtensionPoint[];
-}
-
-export interface ComponentSpec {
-  atomic: boolean;
-  composite: boolean;
-  pattern: boolean;
-  template: boolean;
-  category: ComponentCategory;
-  tags: string[];
-}
-
-export type ComponentCategory =
-  | 'layout'
-  | 'navigation'
-  | 'form'
-  | 'display'
-  | 'feedback'
-  | 'data'
-  | 'interactive'
-  | 'media'
-  | 'composite'
-  | 'template'
-  | 'page';
-
-export interface FrameworkImplementation {
-  code: string;
-  styles: string;
-  tests: string;
-  stories: string;
-  dependencies: Dependency[];
-}
-
-export interface PropSchema {
-  name: string;
-  type: string;
-  description: string;
-  required: boolean;
-  defaultValue?: JSONValue;
-  options?: string[];
-  validation?: PropValidation;
-}
-
-export interface PropValidation {
-  min?: number;
-  max?: number;
-  pattern?: string;
-  message?: string;
-}
-
-export interface SlotSchema {
-  name: string;
-  description: string;
-  required: boolean;
-  allowedComponents?: ID[];
-}
-
-export interface EventSchema {
-  name: string;
-  description: string;
-  payload: string;
-  bubbles: boolean;
-  cancelable: boolean;
-}
-
-export interface StyleSchema {
-  base: string;
-  variants: StyleVariant[];
-  responsive: Record<string, string>;
-}
-
-export interface StyleVariant {
-  name: string;
-  props: Record<string, string>;
-  styles: string;
-}
-
-export interface A11ySchema {
-  role?: string;
-  label?: string;
-  describedBy?: string;
-  keyboardNavigation: boolean;
-  ariaProps: Record<string, string>;
-  wcagLevel: 'A' | 'AA' | 'AAA';
-}
-
-export interface PerformanceMetrics {
-  renderTime: number;
-  bundleSize: number;
-  memoryUsage: number;
-  reRenderCost: 'low' | 'medium' | 'high';
-}
-
-export interface Dependency {
-  name: string;
-  version: string;
-  type: 'dependency' | 'peerDependency' | 'devDependency';
-}
-
-export interface ExtensionPoint {
-  id: ID;
-  name: string;
-  type: 'hook' | 'slot' | 'prop' | 'style' | 'action';
-  description: string;
-}
-
-// ─── Context System ─────────────────────────────────────────────────────────
-
-export interface ProjectContext {
-  id: ID;
-  currentState: ProjectSpec;
-  history: ContextSnapshot[];
-  agentMemory: Map<ID, AgentContext>;
-  externalContext: ExternalResource[];
-  userPreferences: UserPreferenceModel;
-  sessions: Session[];
-}
-
-export interface ContextSnapshot {
-  id: ID;
-  timestamp: Timestamp;
-  spec: ProjectSpec;
-  change: ChangeSet;
-  agent?: ID;
-}
-
-export interface AgentContext {
-  agentId: ID;
-  agentType: string;
-  knowledge: Map<string, JSONValue>;
-  tasks: Task[];
-  preferences: Record<string, unknown>;
-}
-
-export interface ExternalResource {
-  id: ID;
-  type: 'api' | 'library' | 'documentation' | 'asset';
-  url: URL;
-  description: string;
-  metadata: Record<string, JSONValue>;
-}
-
-export interface UserPreferenceModel {
-  stylePreferences: StylePreferences;
-  componentPreferences: string[];
-  frameworkPreference?: Framework;
-  deploymentPreference?: DeploymentTarget;
-  colorScheme: 'light' | 'dark' | 'system';
-  animationsEnabled: boolean;
-  reducedMotion: boolean;
-}
-
-export interface StylePreferences {
-  colorPalette?: string;
-  fontPreference?: string;
-  borderRadius?: string;
-  density: 'compact' | 'comfortable' | 'spacious';
-}
-
-export interface Session {
-  id: ID;
-  startedAt: Timestamp;
-  endedAt?: Timestamp;
-  agent: ID;
-  actions: string[];
-}
-
-// ─── Change System ──────────────────────────────────────────────────────────
-
-export interface ChangeSet {
-  id: ID;
-  timestamp: Timestamp;
-  author: ID;
-  description: string;
-  files: FileChange[];
-  type: 'create' | 'update' | 'delete' | 'refactor' | 'optimize' | 'fix';
-}
-
-export interface FileChange {
-  path: string;
-  content: string;
-  action: 'create' | 'update' | 'delete';
-  previousContent?: string;
-}
-
-// ─── Task System ────────────────────────────────────────────────────────────
-
-export interface Task {
-  id: ID;
-  title: string;
-  description: string;
-  status: TaskStatus;
-  priority: TaskPriority;
-  assignee?: ID;
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-  dueAt?: Timestamp;
-  dependencies: ID[];
-  result?: TaskResult;
-}
-
-export type TaskStatus = 'pending' | 'in-progress' | 'completed' | 'failed' | 'cancelled';
-export type TaskPriority = 'low' | 'medium' | 'high' | 'critical';
-
-export interface TaskResult {
-  success: boolean;
-  output: string;
-  artifacts: string[];
-  metrics: Record<string, number>;
-}
-
-// ─── Testing System ─────────────────────────────────────────────────────────
-
-export interface TestSuite {
-  id: ID;
-  name: string;
-  tests: Test[];
-  coverage: Coverage;
-}
-
-export interface Test {
-  id: ID;
-  name: string;
-  type: 'unit' | 'integration' | 'e2e' | 'visual' | 'a11y' | 'performance';
-  component?: ID;
-  code: string;
-  status: TestStatus;
-}
-
-export type TestStatus = 'passing' | 'failing' | 'skipped' | 'pending';
-
-export interface Coverage {
-  statements: number;
-  branches: number;
-  functions: number;
-  lines: number;
-}
-
-// ─── Performance Budgets ────────────────────────────────────────────────────
-
-export interface PerformanceBudgets {
-  LCP: string;
-  FID: string;
-  CLS: string;
-  TTFB: string;
-  FCP: string;
-  TTI: string;
-  TBT: string;
-  initialJS: string;
-  totalJS: string;
-  css: string;
-  images: string;
-  fonts: string;
-}
-
-// ─── Security Config ────────────────────────────────────────────────────────
-
-export interface SecurityConfig {
-  csp: CSPConfig;
-  auth: AuthConfig;
-  encryption: EncryptionConfig;
-  api: APISecurityConfig;
-  dependencies: DependencySecurityConfig;
-}
-
-export interface CSPConfig {
-  defaultSrc: string[];
-  scriptSrc: string[];
-  styleSrc: string[];
-  imgSrc: string[];
-  connectSrc: string[];
-  fontSrc: string[];
-}
-
-export interface AuthConfig {
-  provider: string;
-  mfa: boolean;
-  sessionTimeout: number;
-  refreshToken: boolean;
-}
-
-export interface EncryptionConfig {
-  atRest: boolean;
-  inTransit: boolean;
-  algorithm?: string;
-}
-
-export interface APISecurityConfig {
-  rateLimit: number;
-  cors: string[];
-  inputValidation: boolean;
-  outputEncoding: boolean;
-}
-
-export interface DependencySecurityConfig {
-  autoUpdate: boolean;
-  vulnerabilityScanning: boolean;
-  licenseCompliance: boolean;
-}
-
-// ─── Plugin System ──────────────────────────────────────────────────────────
-
-export interface Plugin {
-  id: ID;
-  name: string;
-  version: SemanticVersion;
-  description: string;
-  author: string;
-  hooks: PluginHooks;
-  tools: PluginTool[];
-  components: ID[];
-  templates: ID[];
-  themes: ID[];
-  workflows: ID[];
-}
-
-export interface PluginHooks {
-  onProjectCreate?: string;
-  onComponentAdd?: string;
-  onBuildStart?: string;
-  onBuildEnd?: string;
-  onDeploy?: string;
-  onTestRun?: string;
-}
-
-export interface PluginTool {
-  name: string;
-  description: string;
-  inputSchema: Record<string, JSONValue>;
-  handler: string;
-}
-
-// ─── Agent System ───────────────────────────────────────────────────────────
-
-export type AgentType = 'designer' | 'developer' | 'tester' | 'optimizer' | 'deployer' | 'orchestrator' | 'custom';
-
-export interface Agent {
-  id: ID;
-  type: AgentType;
-  name: string;
-  description: string;
-  capabilities: string[];
-  tools: string[];
-  model?: string;
-  status: AgentStatus;
-}
-
-export type AgentStatus = 'idle' | 'working' | 'waiting' | 'error' | 'offline';
-
-export interface AgentMessage {
-  id: ID;
-  from: ID;
-  to: ID;
-  type: 'task' | 'result' | 'question' | 'feedback' | 'delegation';
-  content: JSONValue;
-  timestamp: Timestamp;
-}
-
-// ─── Marketplace ────────────────────────────────────────────────────────────
-
-export interface MarketplaceItem {
-  id: ID;
-  type: 'component' | 'template' | 'theme' | 'plugin' | 'integration';
-  name: string;
-  description: string;
-  author: string;
-  version: SemanticVersion;
-  downloads: number;
-  rating: number;
-  reviews: Review[];
-  price: number;
-  tags: string[];
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
-}
-
-export interface Review {
-  id: ID;
-  author: string;
-  rating: number;
-  comment: string;
-  createdAt: Timestamp;
-}
-
-// ─── Observability ──────────────────────────────────────────────────────────
-
-export interface ObservabilityConfig {
-  performance: PerformanceObservability;
-  analytics: AnalyticsConfig;
-  logging: LoggingConfig;
-  alerts: AlertConfig[];
-  feedback: FeedbackConfig;
-}
-
-export interface PerformanceObservability {
-  coreWebVitals: boolean;
-  realUserMetrics: boolean;
-  syntheticMonitoring: boolean;
-}
-
-export interface AnalyticsConfig {
-  privacy: 'none' | 'minimal' | 'full';
-  trackEvents: boolean;
-  trackErrors: boolean;
-  trackUsage: boolean;
-}
-
-export interface LoggingConfig {
-  level: 'debug' | 'info' | 'warn' | 'error';
-  destination: string[];
-  retention: string;
-}
-
-export interface FeedbackConfig {
-  enabled: boolean;
-  prompt: string;
-  categories: string[];
+// WebBuilder Core Types
+// Comprehensive type system for the entire platform
+
+export enum Platform {
+  WEB = 'web',
+  IOS = 'ios',
+  ANDROID = 'android',
+  DESKTOP = 'desktop',
+  CLI = 'cli',
+  PWA = 'pwa',
+  EXTENSION = 'extension',
+  H5 = 'h5',
+  MINI_PROGRAM = 'mini_program',
+  ELECTRON = 'electron',
+  TAURI = 'tauri',
+  CAPACITOR = 'capacitor',
+  REACT_NATIVE = 'react_native',
+  FLUTTER = 'flutter',
+  QT = 'qt',
+  GTK = 'gtk',
+  SWING = 'swing',
+  JAVAFX = 'javafx',
+  DOTNET = 'dotnet',
+  TAURI_PY = 'tauri_py',
+  WINFORMS = 'winforms',
+  WPF = 'wpf',
+  MAUI = 'maui',
+  AVALONIA = 'avalonia',
+  UNO = 'uno',
+  WEBASSEMBLY = 'webassembly',
+}
+
+export enum ComponentCategory {
+  LAYOUT = 'layout',
+  CONTENT = 'content',
+  NAVIGATION = 'navigation',
+  FORM = 'form',
+  COMMERCE = 'commerce',
+  SOCIAL = 'social',
+  MEDIA = 'media',
+  DATA = 'data',
+  UTILITY = 'utility',
+  GAMING = 'gaming',
+  EDUCATION = 'education',
+  HEALTH = 'health',
+  FINANCE = 'finance',
+  TRAVEL = 'travel',
+  FOOD = 'food',
+  SPORTS = 'sports',
+  NEWS = 'news',
+  ENTERTAINMENT = 'entertainment',
+  BUSINESS = 'business',
+  PERSONAL = 'personal',
+  GOVERNMENT = 'government',
+  NONPROFIT = 'nonprofit',
+  ECOMMERCE = 'ecommerce',
+  SAAS = 'saas',
+  BLOG = 'blog',
+  PORTFOLIO = 'portfolio',
+  DOCUMENTATION = 'documentation',
+  DASHBOARD = 'dashboard',
+  LANDING = 'landing',
+  EMAIL = 'email',
+  CHAT = 'chat',
+  MAP = 'map',
+  MUSIC = 'music',
+  PHOTO = 'photo',
+  VIDEO = 'video',
+  DRAWING = 'drawing',
+  CALENDAR = 'calendar',
+  CALCULATOR = 'calculator',
+  TIMER = 'timer',
+  NOTES = 'notes',
+  TODO = 'todo',
+  WEATHER = 'weather',
+  MONITOR = 'monitor',
+  WIKIPEDIA = 'wikipedia',
+  FORUM = 'forum',
+  MAGAZINE = 'magazine',
+  STARTUP = 'startup',
+  AGENCY = 'agency',
+  RESTAURANT = 'restaurant',
+  REAL_ESTATE = 'realestate',
+  EDUCATION_SCHOOL = 'education_school',
+  HEALTH_MEDICAL = 'health_medical',
+  FINANCE_BANK = 'finance_bank',
+  ENTERTAINMENT_GAME = 'entertainment_game',
+  NONPROFIT_CHARITY = 'nonprofit_charity',
+  PERSONAL_RESUME = 'personal_resume',
+  GOVERNMENT_CITY = 'government_city',
+  CUSTOM = 'custom',
+}
+
+export enum AssetType {
+  ICON = 'icon',
+  IMAGE = 'image',
+  VIDEO = 'video',
+  AUDIO = 'audio',
+  FONT = 'font',
+  COLOR = 'color',
+  GRADIENT = 'gradient',
+  PATTERN = 'pattern',
+  ANIMATION = 'animation',
+  SPRITE = 'sprite',
+  TILESET = 'tileset',
+  CURSOR = 'cursor',
+  SOUND = 'sound',
+  MUSIC = 'music',
+  SFX = 'sfx',
+  MODEL_3D = 'model_3d',
+  SHADER = 'shader',
+  MATERIAL = 'material',
+  TEXTURE = 'texture',
+  TILE = 'tile',
+  UI = 'ui',
+  LOGO = 'logo',
+  ICON_SET = 'icon_set',
+  AVATAR = 'avatar',
+  BACKGROUND = 'background',
+  OVERLAY = 'overlay',
+  FRAME = 'frame',
+  BORDER = 'border',
+  SHADOW = 'shadow',
+  STICKER = 'sticker',
+  EMOJI = 'emoji',
+  BADGE = 'badge',
+  CERTIFICATE = 'certificate',
+  TROPHY = 'trophy',
+  MEDAL = 'medal',
+  RIBBON = 'ribbon',
+  BANNER = 'banner',
+  POSTER = 'poster',
+  FLYER = 'flyer',
+  BUSINESS_CARD = 'business_card',
+  INVOICE = 'invoice',
+  RECEIPT = 'receipt',
+  LABEL = 'label',
+  TAG = 'tag',
+  TICKET = 'ticket',
+  PASS = 'pass',
+  CARD = 'card',
+  CUSTOM = 'custom',
+}
+
+export enum ExportFormat {
+  HTML = 'html',
+  REACT = 'react',
+  VUE = 'vue',
+  SVELTE = 'svelte',
+  KOTLIN = 'kotlin',
+  SWIFT = 'swift',
+  FLUTTER = 'flutter',
+  QT = 'qt',
+  GTK = 'gtk',
+  SWING = 'swing',
+  JAVAFX = 'javafx',
+  DOTNET = 'dotnet',
+  TAURI = 'tauri',
+  ELECTRON = 'electron',
+  CAPACITOR = 'capacitor',
+  REACT_NATIVE = 'react_native',
+  WEBASSEMBLY = 'webassembly',
+  DOCKER = 'docker',
+  STATIC = 'static',
+  NEXTJS = 'nextjs',
+  NUXT = 'nuxt',
+  SVELTEKIT = 'sveltekit',
+  REMIX = 'remix',
+  ASTRO = 'astro',
+  GATSBY = 'gatsby',
+  HUGO = 'hugo',
+  JEKYLL = 'jekyll',
+  HEXO = 'hexo',
+  VITE = 'vite',
+  WEBPACK = 'webpack',
+  ROLLUP = 'rollup',
+  PARCEL = 'parcel',
+  ESBUILD = 'esbuild',
+  TURBOREPO = 'turborepo',
+  LERNA = 'lerna',
+  NX = 'nx',
+  RUSH = 'rush',
+  MOON = 'moon',
+  CUSTOM = 'custom',
+}
+
+export enum TemplateType {
+  LANDING = 'landing',
+  PORTFOLIO = 'portfolio',
+  ECOMMERCE = 'ecommerce',
+  BLOG = 'blog',
+  DASHBOARD = 'dashboard',
+  SOCIAL = 'social',
+  DOCUMENTATION = 'documentation',
+  SAAS = 'saas',
+  AGENCY = 'agency',
+  RESTAURANT = 'restaurant',
+  REAL_ESTATE = 'realestate',
+  TRAVEL = 'travel',
+  EDUCATION = 'education',
+  HEALTH = 'health',
+  FINANCE = 'finance',
+  ENTERTAINMENT = 'entertainment',
+  NONPROFIT = 'nonprofit',
+  PERSONAL = 'personal',
+  STARTUP = 'startup',
+  MAGAZINE = 'magazine',
+  FORUM = 'forum',
+  WIKIPEDIA = 'wikipedia',
+  MONITOR = 'monitor',
+  WEATHER = 'weather',
+  CALCULATOR = 'calculator',
+  TIMER = 'timer',
+  NOTES = 'notes',
+  TODO = 'todo',
+  CHAT = 'chat',
+  EMAIL = 'email',
+  MAP = 'map',
+  MUSIC = 'music',
+  PHOTO = 'photo',
+  VIDEO = 'video',
+  DRAWING = 'drawing',
+  GAME = 'game',
+  CUSTOM = 'custom',
+}
+
+export enum FieldType {
+  TEXT = 'text',
+  NUMBER = 'number',
+  BOOLEAN = 'boolean',
+  COLOR = 'color',
+  SELECT = 'select',
+  MULTI_SELECT = 'multi_select',
+  RANGE = 'range',
+  TEXTAREA = 'textarea',
+  RICH_TEXT = 'rich_text',
+  IMAGE = 'image',
+  VIDEO = 'video',
+  AUDIO = 'audio',
+  FILE = 'file',
+  DATE = 'date',
+  TIME = 'time',
+  DATETIME = 'datetime',
+  EMAIL = 'email',
+  URL = 'url',
+  TEL = 'tel',
+  PASSWORD = 'password',
+  CODE = 'code',
+  MARKDOWN = 'markdown',
+  JSON = 'json',
+  CSS = 'css',
+  HTML = 'html',
+  ICON = 'icon',
+  GRADIENT = 'gradient',
+  ANIMATION = 'animation',
+  COMPONENT = 'component',
+  COMPONENTS = 'components',
+  TEMPLATE = 'template',
+  STYLE = 'style',
+  LINK = 'link',
+  LINKS = 'links',
+  NAVIGATION = 'navigation',
+  SOCIAL_LINKS = 'social_links',
+  META = 'meta',
+  SEO = 'seo',
+  OG = 'og',
+  CUSTOM = 'custom',
+}
+
+export enum LogicType {
+  CLICK = 'click',
+  HOVER = 'hover',
+  FOCUS = 'focus',
+  BLUR = 'blur',
+  SUBMIT = 'submit',
+  CHANGE = 'change',
+  INPUT = 'input',
+  SCROLL = 'scroll',
+  RESIZE = 'resize',
+  LOAD = 'load',
+  UNLOAD = 'unload',
+  KEYBOARD = 'keyboard',
+  TIMER = 'timer',
+  INTERVAL = 'interval',
+  ANIMATION_END = 'animation_end',
+  TRANSITION_END = 'transition_end',
+  INTERSECTION = 'intersection',
+  MEDIA_QUERY = 'media_query',
+  GESTURE = 'gesture',
+  DRAG = 'drag',
+  DROP = 'drop',
+  CUSTOM = 'custom',
+}
+
+export enum LogicAction {
+  NAVIGATE = 'navigate',
+  SCROLL = 'scroll',
+  TOGGLE = 'toggle',
+  SHOW = 'show',
+  HIDE = 'hide',
+  FADE_IN = 'fade_in',
+  FADE_OUT = 'fade_out',
+  SLIDE_IN = 'slide_in',
+  SLIDE_OUT = 'slide_out',
+  ANIMATE = 'animate',
+  SET_STATE = 'set_state',
+  SET_DATA = 'set_data',
+  FETCH = 'fetch',
+  SUBMIT = 'submit',
+  VALIDATE = 'validate',
+  CALCULATE = 'calculate',
+  TRANSFORM = 'transform',
+  FILTER = 'filter',
+  SORT = 'sort',
+  SEARCH = 'search',
+  SHARE = 'share',
+  DOWNLOAD = 'download',
+  COPY = 'copy',
+  PRINT = 'print',
+  ALERT = 'alert',
+  CONFIRM = 'confirm',
+  PROMPT = 'prompt',
+  TOAST = 'toast',
+  MODAL = 'modal',
+  DRAWER = 'drawer',
+  POPOVER = 'popover',
+  TOOLTIP = 'tooltip',
+  PLAY = 'play',
+  PAUSE = 'pause',
+  STOP = 'stop',
+  FULLSCREEN = 'fullscreen',
+  EXIT_FULLSCREEN = 'exit_fullscreen',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationType {
+  NONE = 'none',
+  FADE = 'fade',
+  SLIDE = 'slide',
+  ZOOM = 'zoom',
+  ROTATE = 'rotate',
+  FLIP = 'flip',
+  BOUNCE = 'bounce',
+  ELASTIC = 'elastic',
+  SPRING = 'spring',
+  KEYFRAMES = 'keyframes',
+  SCROLL = 'scroll',
+  HOVER = 'hover',
+  CLICK = 'click',
+  LOADING = 'loading',
+  PROGRESS = 'progress',
+  TRANSITION = 'transition',
+  MORPH = 'morph',
+  PARALLAX = 'parallax',
+  REVEAL = 'reveal',
+  STAGGER = 'stagger',
+  CUSTOM = 'custom',
+}
+
+export enum LayoutType {
+  NONE = 'none',
+  FLEX_ROW = 'flex_row',
+  FLEX_COLUMN = 'flex_column',
+  GRID = 'grid',
+  ABSOLUTE = 'absolute',
+  FIXED = 'fixed',
+  STICKY = 'sticky',
+  FLOAT = 'float',
+  INLINE = 'inline',
+  BLOCK = 'block',
+  INLINE_BLOCK = 'inline_block',
+  INLINE_FLEX = 'inline_flex',
+  INLINE_GRID = 'inline_grid',
+  FLOW = 'flow',
+  TABLE = 'table',
+  TABLE_CELL = 'table_cell',
+  LIST_ITEM = 'list_item',
+  CONTENTS = 'contents',
+  INHERIT = 'inherit',
+  INITIAL = 'initial',
+  UNSET = 'unset',
+  CUSTOM = 'custom',
+}
+
+export enum ResponsiveStrategy {
+  MOBILE_FIRST = 'mobile_first',
+  DESKTOP_FIRST = 'desktop_first',
+  TABLET_FIRST = 'tablet_first',
+  NONE = 'none',
+}
+
+export enum BrowserSupport {
+  ALL = 'all',
+  MODERN = 'modern',
+  LEGACY = 'legacy',
+  CUSTOM = 'custom',
+}
+
+export enum Language {
+  ENGLISH = 'en',
+  SPANISH = 'es',
+  FRENCH = 'fr',
+  GERMAN = 'de',
+  ITALIAN = 'it',
+  PORTUGUESE = 'pt',
+  DUTCH = 'nl',
+  RUSSIAN = 'ru',
+  CHINESE = 'zh',
+  JAPANESE = 'ja',
+  KOREAN = 'ko',
+  ARABIC = 'ar',
+  HINDI = 'hi',
+  TURKISH = 'tr',
+  POLISH = 'pl',
+  SWEDISH = 'sv',
+  DANISH = 'da',
+  NORWEGIAN = 'no',
+  FINNISH = 'fi',
+  GREEK = 'el',
+  CZECH = 'cs',
+  HUNGARIAN = 'hu',
+  ROMANIAN = 'ro',
+  BULGARIAN = 'bg',
+  CROATIAN = 'hr',
+  SERBIAN = 'sr',
+  SLOVAK = 'sk',
+  SLOVENE = 'sl',
+  ESTONIAN = 'et',
+  LATVIAN = 'lv',
+  LITHUANIAN = 'lt',
+  UKRAINIAN = 'uk',
+  HEBREW = 'he',
+  THAI = 'th',
+  VIETNAMESE = 'vi',
+  INDONESIAN = 'id',
+  MALAY = 'ms',
+  FILIPINO = 'tl',
+  SWAHILI = 'sw',
+  AMHARIC = 'am',
+  YORUBA = 'yo',
+  IGBO = 'ig',
+  ZULU = 'zu',
+  AFRIKAANS = 'af',
+  ALBANIAN = 'sq',
+  ARMENIAN = 'hy',
+  AZERBAIJANI = 'az',
+  BASQUE = 'eu',
+  BELARUSIAN = 'be',
+  BENGALI = 'bn',
+  BOSNIAN = 'bs',
+  CATALAN = 'ca',
+  CEBUANO = 'ceb',
+  CHICHEWA = 'ny',
+  CORSICAN = 'co',
+  CROATIAN_HR = 'hr_HR',
+  ESPERANTO = 'eo',
+  FRISIAN = 'fy',
+  GALICIAN = 'gl',
+  GEORGIAN = 'ka',
+  GUJARATI = 'gu',
+  HAITIAN_CREOLE = 'ht',
+  HAUSA = 'haw',
+  HAWAIIAN = 'haw',
+  HMONGS = 'hmn',
+  ICELANDIC = 'is',
+  ILOCANO = 'ilo',
+  JAVANESE = 'jw',
+  KANNADA = 'kn',
+  KAZAKH = 'kk',
+  KHMER = 'km',
+  KURDISH = 'ku',
+  KYRGYZ = 'ky',
+  LAO = 'lo',
+  LATIN = 'la',
+  LUXEMBOURGISH = 'lb',
+  MACEDONIAN = 'mk',
+  MALAGASY = 'mg',
+  MALAYALAM = 'ml',
+  MALTESE = 'mt',
+  MAORI = 'mi',
+  MARATHI = 'mr',
+  MONGOLIAN = 'mn',
+  MYANMAR = 'my',
+  NEPALI = 'ne',
+  PUNJABI = 'pa',
+  PASHTO = 'ps',
+  PERSIAN = 'fa',
+  SAMOAN = 'sm',
+  SCOTS_GAELIC = 'gd',
+  SESOTO = 'st',
+  SHONA = 'sn',
+  SINDHI = 'sd',
+  SINHALA = 'si',
+  SOMALI = 'so',
+  SUNDANESE = 'su',
+  TAJIK = 'tg',
+  TAMIL = 'ta',
+  TELUGU = 'te',
+  URDU = 'ur',
+  UZBEK = 'uz',
+  WELSH = 'cy',
+  XHOSA = 'xh',
+  YIDDISH = 'yi',
+  ZULU_ZU = 'zu_ZA',
+  CUSTOM = 'custom',
+}
+
+export enum Currency {
+  USD = 'usd',
+  EUR = 'eur',
+  GBP = 'gbp',
+  JPY = 'jpy',
+  AUD = 'aud',
+  CAD = 'cad',
+  CHF = 'chf',
+  CNY = 'cny',
+  SEK = 'sek',
+  NZD = 'nzd',
+  MXN = 'mxn',
+  SGD = 'sgd',
+  HKD = 'hkd',
+  NOK = 'nok',
+  TRY = 'try',
+  INR = 'inr',
+  BRL = 'brl',
+  ZAR = 'zar',
+  RUB = 'rub',
+  KRW = 'krw',
+  PLN = 'pln',
+  THB = 'thb',
+  IDR = 'idr',
+  HUF = 'huf',
+  CZK = 'czk',
+  ILS = 'ils',
+  CLP = 'clp',
+  PHP = 'php',
+  AED = 'aed',
+  COP = 'cop',
+  SAR = 'sar',
+  MYR = 'myr',
+  RON = 'ron',
+  CUSTOM = 'custom',
+}
+
+export enum MeasurementUnit {
+  PX = 'px',
+  EM = 'em',
+  REM = 'rem',
+  PERCENT = '%',
+  VH = 'vh',
+  VW = 'vw',
+  VMIN = 'vmin',
+  VMAX = 'vmax',
+  CH = 'ch',
+  EX = 'ex',
+  CM = 'cm',
+  MM = 'mm',
+  IN = 'in',
+  PT = 'pt',
+  PC = 'pc',
+  FR = 'fr',
+  AUTO = 'auto',
+  FIT_CONTENT = 'fit_content',
+  MAX_CONTENT = 'max_content',
+  MIN_CONTENT = 'min_content',
+  CUSTOM = 'custom',
+}
+
+export enum TimeZone {
+  UTC = 'utc',
+  LOCAL = 'local',
+  CUSTOM = 'custom',
+}
+
+export enum DateFormat {
+  YYYY_MM_DD = 'yyyy_mm_dd',
+  MM_DD_YYYY = 'mm_dd_yyyy',
+  DD_MM_YYYY = 'dd_mm_yyyy',
+  CUSTOM = 'custom',
+}
+
+export enum TimeFormat {
+  TWELVE_HOUR = '12h',
+  TWENTY_FOUR_HOUR = '24h',
+  CUSTOM = 'custom',
+}
+
+export enum ThemeMode {
+  LIGHT = 'light',
+  DARK = 'dark',
+  SYSTEM = 'system',
+  CUSTOM = 'custom',
+}
+
+export enum Permission {
+  READ = 'read',
+  WRITE = 'write',
+  EXECUTE = 'execute',
+  DELETE = 'delete',
+  ADMIN = 'admin',
+  CUSTOM = 'custom',
+}
+
+export enum Role {
+  OWNER = 'owner',
+  ADMIN = 'admin',
+  EDITOR = 'editor',
+  VIEWER = 'viewer',
+  GUEST = 'guest',
+  CUSTOM = 'custom',
+}
+
+export enum Status {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  PENDING = 'pending',
+  ARCHIVED = 'archived',
+  DELETED = 'deleted',
+  DRAFT = 'draft',
+  PUBLISHED = 'published',
+  CUSTOM = 'custom',
+}
+
+export enum Priority {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
+  URGENT = 'urgent',
+  CRITICAL = 'critical',
+  CUSTOM = 'custom',
+}
+
+export enum SortOrder {
+  ASC = 'asc',
+  DESC = 'desc',
+  RANDOM = 'random',
+  CUSTOM = 'custom',
+}
+
+export enum FilterOperator {
+  EQUALS = 'equals',
+  NOT_EQUALS = 'not_equals',
+  CONTAINS = 'contains',
+  NOT_CONTAINS = 'not_contains',
+  STARTS_WITH = 'starts_with',
+  ENDS_WITH = 'ends_with',
+  GREATER_THAN = 'greater_than',
+  LESS_THAN = 'less_than',
+  GREATER_EQUAL = 'greater_equal',
+  LESS_EQUAL = 'less_equal',
+  BETWEEN = 'between',
+  IN = 'in',
+  NOT_IN = 'not_in',
+  IS_NULL = 'is_null',
+  IS_NOT_NULL = 'is_not_null',
+  CUSTOM = 'custom',
+}
+
+export enum JoinOperator {
+  AND = 'and',
+  OR = 'or',
+  XOR = 'xor',
+  NOT = 'not',
+  CUSTOM = 'custom',
+}
+
+export enum ComparisonOperator {
+  EQUAL = 'equal',
+  NOT_EQUAL = 'not_equal',
+  GREATER = 'greater',
+  LESS = 'less',
+  GREATER_EQUAL = 'greater_equal',
+  LESS_EQUAL = 'less_equal',
+  LIKE = 'like',
+  NOT_LIKE = 'not_like',
+  IN = 'in',
+  NOT_IN = 'not_in',
+  BETWEEN = 'between',
+  NOT_BETWEEN = 'not_between',
+  IS_NULL = 'is_null',
+  IS_NOT_NULL = 'is_not_null',
+  CUSTOM = 'custom',
+}
+
+export enum HttpMethod {
+  GET = 'get',
+  POST = 'post',
+  PUT = 'put',
+  PATCH = 'patch',
+  DELETE = 'delete',
+  HEAD = 'head',
+  OPTIONS = 'options',
+  TRACE = 'trace',
+  CONNECT = 'connect',
+  CUSTOM = 'custom',
+}
+
+export enum DataType {
+  STRING = 'string',
+  NUMBER = 'number',
+  BOOLEAN = 'boolean',
+  OBJECT = 'object',
+  ARRAY = 'array',
+  NULL = 'null',
+  UNDEFINED = 'undefined',
+  FUNCTION = 'function',
+  SYMBOL = 'symbol',
+  BIGINT = 'bigint',
+  DATE = 'date',
+  REGEXP = 'regexp',
+  MAP = 'map',
+  SET = 'set',
+  WEAK_MAP = 'weak_map',
+  WEAK_SET = 'weak_set',
+  ARRAY_BUFFER = 'array_buffer',
+  DATA_VIEW = 'data_view',
+  FLOAT32_ARRAY = 'float32_array',
+  FLOAT64_ARRAY = 'float64_array',
+  INT8_ARRAY = 'int8_array',
+  INT16_ARRAY = 'int16_array',
+  INT32_ARRAY = 'int32_array',
+  UINT8_ARRAY = 'uint8_array',
+  UINT8_CLAMPED_ARRAY = 'uint8_clamped_array',
+  UINT16_ARRAY = 'uint16_array',
+  UINT32_ARRAY = 'uint32_array',
+  BIGINT64_ARRAY = 'bigint64_array',
+  BIGUINT64_ARRAY = 'biguint64_array',
+  ERROR = 'error',
+  PROMISE = 'promise',
+  PROXY = 'proxy',
+  REFLECT = 'reflect',
+  INTL = 'intl',
+  WEB_ASSEMBLY = 'web_assembly',
+  CUSTOM = 'custom',
+}
+
+export enum ValidationType {
+  REQUIRED = 'required',
+  MIN_LENGTH = 'min_length',
+  MAX_LENGTH = 'max_length',
+  MIN_VALUE = 'min_value',
+  MAX_VALUE = 'max_value',
+  PATTERN = 'pattern',
+  EMAIL = 'email',
+  URL = 'url',
+  PHONE = 'phone',
+  ZIP_CODE = 'zip_code',
+  CREDIT_CARD = 'credit_card',
+  SSN = 'ssn',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationEasing {
+  LINEAR = 'linear',
+  EASE = 'ease',
+  EASE_IN = 'ease_in',
+  EASE_OUT = 'ease_out',
+  EASE_IN_OUT = 'ease_in_out',
+  BOUNCE_IN = 'bounce_in',
+  BOUNCE_OUT = 'bounce_out',
+  BOUNCE_IN_OUT = 'bounce_in_out',
+  ELASTIC_IN = 'elastic_in',
+  ELASTIC_OUT = 'elastic_out',
+  ELASTIC_IN_OUT = 'elastic_in_out',
+  SPRING = 'spring',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationDirection {
+  NORMAL = 'normal',
+  REVERSE = 'reverse',
+  ALTERNATE = 'alternate',
+  ALTERNATE_REVERSE = 'alternate_reverse',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationFill {
+  NONE = 'none',
+  FORWARDS = 'forwards',
+  BACKWARDS = 'backwards',
+  BOTH = 'both',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationPlayState {
+  RUNNING = 'running',
+  PAUSED = 'paused',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationTiming {
+  START = 'start',
+  END = 'end',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationIterationCount {
+  INFINITE = 'infinite',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationDelay {
+  NONE = 'none',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationDuration {
+  FAST = 'fast',
+  FASTER = 'faster',
+  FASTEST = 'fastest',
+  SLOW = 'slow',
+  SLOWER = 'slower',
+  SLOWEST = 'slowest',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationFillMode {
+  NONE = 'none',
+  FORWARDS = 'forwards',
+  BACKWARDS = 'backwards',
+  BOTH = 'both',
+  AUTO = 'auto',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationName {
+  NONE = 'none',
+  FADE_IN = 'fade_in',
+  FADE_OUT = 'fade_out',
+  FADE_IN_UP = 'fade_in_up',
+  FADE_IN_DOWN = 'fade_in_down',
+  FADE_IN_LEFT = 'fade_in_left',
+  FADE_IN_RIGHT = 'fade_in_right',
+  FADE_OUT_UP = 'fade_out_up',
+  FADE_OUT_DOWN = 'fade_out_down',
+  FADE_OUT_LEFT = 'fade_out_left',
+  FADE_OUT_RIGHT = 'fade_out_right',
+  SLIDE_IN_UP = 'slide_in_up',
+  SLIDE_IN_DOWN = 'slide_in_down',
+  SLIDE_IN_LEFT = 'slide_in_left',
+  SLIDE_IN_RIGHT = 'slide_in_right',
+  SLIDE_OUT_UP = 'slide_out_up',
+  SLIDE_OUT_DOWN = 'slide_out_down',
+  SLIDE_OUT_LEFT = 'slide_out_left',
+  SLIDE_OUT_RIGHT = 'slide_out_right',
+  ZOOM_IN = 'zoom_in',
+  ZOOM_OUT = 'zoom_out',
+  ZOOM_IN_UP = 'zoom_in_up',
+  ZOOM_IN_DOWN = 'zoom_in_down',
+  ZOOM_IN_LEFT = 'zoom_in_left',
+  ZOOM_IN_RIGHT = 'zoom_in_right',
+  ZOOM_OUT_UP = 'zoom_out_up',
+  ZOOM_OUT_DOWN = 'zoom_out_down',
+  ZOOM_OUT_LEFT = 'zoom_out_left',
+  ZOOM_OUT_RIGHT = 'zoom_out_right',
+  ROTATE_IN = 'rotate_in',
+  ROTATE_OUT = 'rotate_out',
+  ROTATE_IN_UP_LEFT = 'rotate_in_up_left',
+  ROTATE_IN_UP_RIGHT = 'rotate_in_up_right',
+  ROTATE_IN_DOWN_LEFT = 'rotate_in_down_left',
+  ROTATE_IN_DOWN_RIGHT = 'rotate_in_down_right',
+  ROTATE_OUT_UP_LEFT = 'rotate_out_up_left',
+  ROTATE_OUT_UP_RIGHT = 'rotate_out_up_right',
+  ROTATE_OUT_DOWN_LEFT = 'rotate_out_down_left',
+  ROTATE_OUT_DOWN_RIGHT = 'rotate_out_down_right',
+  FLIP_IN_X = 'flip_in_x',
+  FLIP_IN_Y = 'flip_in_y',
+  FLIP_OUT_X = 'flip_out_x',
+  FLIP_OUT_Y = 'flip_out_y',
+  BOUNCE_IN = 'bounce_in',
+  BOUNCE_OUT = 'bounce_out',
+  BOUNCE_IN_UP = 'bounce_in_up',
+  BOUNCE_IN_DOWN = 'bounce_in_down',
+  BOUNCE_IN_LEFT = 'bounce_in_left',
+  BOUNCE_IN_RIGHT = 'bounce_in_right',
+  BOUNCE_OUT_UP = 'bounce_out_up',
+  BOUNCE_OUT_DOWN = 'bounce_out_down',
+  BOUNCE_OUT_LEFT = 'bounce_out_left',
+  BOUNCE_OUT_RIGHT = 'bounce_out_right',
+  ELASTIC_IN = 'elastic_in',
+  ELASTIC_OUT = 'elastic_out',
+  ELASTIC_IN_UP = 'elastic_in_up',
+  ELASTIC_IN_DOWN = 'elastic_in_down',
+  ELASTIC_IN_LEFT = 'elastic_in_left',
+  ELASTIC_IN_RIGHT = 'elastic_in_right',
+  ELASTIC_OUT_UP = 'elastic_out_up',
+  ELASTIC_OUT_DOWN = 'elastic_out_down',
+  ELASTIC_OUT_LEFT = 'elastic_out_left',
+  ELASTIC_OUT_RIGHT = 'elastic_out_right',
+  SPRING_IN = 'spring_in',
+  SPRING_OUT = 'spring_out',
+  SPRING_IN_UP = 'spring_in_up',
+  SPRING_IN_DOWN = 'spring_in_down',
+  SPRING_IN_LEFT = 'spring_in_left',
+  SPRING_IN_RIGHT = 'spring_in_right',
+  SPRING_OUT_UP = 'spring_out_up',
+  SPRING_OUT_DOWN = 'spring_out_down',
+  SPRING_OUT_LEFT = 'spring_out_left',
+  SPRING_OUT_RIGHT = 'spring_out_right',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationProperty {
+  OPACITY = 'opacity',
+  TRANSLATE_X = 'translate_x',
+  TRANSLATE_Y = 'translate_y',
+  TRANSLATE_Z = 'translate_z',
+  SCALE = 'scale',
+  SCALE_X = 'scale_x',
+  SCALE_Y = 'scale_y',
+  SCALE_Z = 'scale_z',
+  ROTATE = 'rotate',
+  ROTATE_X = 'rotate_x',
+  ROTATE_Y = 'rotate_y',
+  ROTATE_Z = 'rotate_z',
+  SKEW_X = 'skew_x',
+  SKEW_Y = 'skew_y',
+  ORIGIN = 'origin',
+  PERSPECTIVE = 'perspective',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationFunction {
+  LINEAR = 'linear',
+  EASE = 'ease',
+  EASE_IN = 'ease_in',
+  EASE_OUT = 'ease_out',
+  EASE_IN_OUT = 'ease_in_out',
+  CUBIC_BEZIER = 'cubic_bezier',
+  STEPS = 'steps',
+  SPRING = 'spring',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationKeyframe {
+  FROM = 'from',
+  TO = 'to',
+  PERCENT = 'percent',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationTransform {
+  TRANSLATE = 'translate',
+  SCALE = 'scale',
+  ROTATE = 'rotate',
+  SKEW = 'skew',
+  MATRIX = 'matrix',
+  MATRIX3D = 'matrix3d',
+  PERSPECTIVE = 'perspective',
+  TRANSLATE3D = 'translate3d',
+  TRANSLATE_X = 'translate_x',
+  TRANSLATE_Y = 'translate_y',
+  TRANSLATE_Z = 'translate_z',
+  SCALE3D = 'scale3d',
+  SCALE_X = 'scale_x',
+  SCALE_Y = 'scale_y',
+  SCALE_Z = 'scale_z',
+  ROTATE3D = 'rotate3d',
+  ROTATE_X = 'rotate_x',
+  ROTATE_Y = 'rotate_y',
+  ROTATE_Z = 'rotate_z',
+  SKEW_X = 'skew_x',
+  SKEW_Y = 'skew_y',
+  CUSTOM = 'custom',
+}
+
+export enum AnimationTimingFunction {
+  LINEAR = 'linear',
+  EASE = 'ease',
+  EASE_IN = 'ease_in',
+  EASE_OUT = 'ease_out',
+  EASE_IN_OUT = 'ease_in_out',
+  STEP_START = 'step_start',
+  STEP_END = 'step_end',
+  CUBIC_BEZIER = 'cubic_bezier',
+  STEPS = 'steps',
+  FRAMES = 'frames',
+  SPRING = 'spring',
+  CUSTOM = 'custom',
 }
