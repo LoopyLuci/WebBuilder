@@ -56,12 +56,16 @@ class SGD(Optimizer):
             if key not in self.velocity:
                 self.velocity[key] = np.zeros_like(params[key])
 
-            grad = grads[key]
+            grad = grads[key].copy()
             if self.weight_decay > 0:
                 grad = grad + self.weight_decay * params[key]
 
-            self.velocity[key] = self.momentum * self.velocity[key] - self.lr * grad
-            params[key] = params[key] + self.velocity[key]
+            # Update velocity in-place
+            np.multiply(self.velocity[key], self.momentum, out=self.velocity[key])
+            np.add(self.velocity[key], -self.lr * grad, out=self.velocity[key])
+            
+            # Update params in-place
+            np.add(params[key], self.velocity[key], out=params[key])
 
     def __repr__(self):
         return (f"SGD(lr={self.lr}, momentum={self.momentum}, "
@@ -101,20 +105,24 @@ class Adam(Optimizer):
                 self.m[key] = np.zeros_like(params[key])
                 self.v[key] = np.zeros_like(params[key])
 
-            grad = grads[key]
+            grad = grads[key].copy()
             if self.weight_decay > 0:
                 grad = grad + self.weight_decay * params[key]
 
-            # Update moments
-            self.m[key] = self.beta1 * self.m[key] + (1 - self.beta1) * grad
-            self.v[key] = self.beta2 * self.v[key] + (1 - self.beta2) * grad ** 2
+            # Update moments in-place
+            np.multiply(self.m[key], self.beta1, out=self.m[key])
+            np.add(self.m[key], (1 - self.beta1) * grad, out=self.m[key])
+            
+            np.multiply(self.v[key], self.beta2, out=self.v[key])
+            np.add(self.v[key], (1 - self.beta2) * grad ** 2, out=self.v[key])
 
             # Bias correction
             m_hat = self.m[key] / (1 - self.beta1 ** self.t)
             v_hat = self.v[key] / (1 - self.beta2 ** self.t)
 
-            # Update parameters
-            params[key] = params[key] - self.lr * m_hat / (np.sqrt(v_hat) + self.epsilon)
+            # Update parameters in-place
+            update = self.lr * m_hat / (np.sqrt(v_hat) + self.epsilon)
+            np.subtract(params[key], update, out=params[key])
 
     def __repr__(self):
         return f"Adam(lr={self.lr}, beta1={self.beta1}, beta2={self.beta2})"
@@ -156,20 +164,22 @@ class AdamW(Optimizer):
                 self.m[key] = np.zeros_like(params[key])
                 self.v[key] = np.zeros_like(params[key])
 
-            grad = grads[key]
+            grad = grads[key].copy()
 
-            # Update moments (no weight decay in gradient)
-            self.m[key] = self.beta1 * self.m[key] + (1 - self.beta1) * grad
-            self.v[key] = self.beta2 * self.v[key] + (1 - self.beta2) * grad ** 2
+            # Update moments in-place (no weight decay in gradient)
+            np.multiply(self.m[key], self.beta1, out=self.m[key])
+            np.add(self.m[key], (1 - self.beta1) * grad, out=self.m[key])
+            
+            np.multiply(self.v[key], self.beta2, out=self.v[key])
+            np.add(self.v[key], (1 - self.beta2) * grad ** 2, out=self.v[key])
 
             # Bias correction
             m_hat = self.m[key] / (1 - self.beta1 ** self.t)
             v_hat = self.v[key] / (1 - self.beta2 ** self.t)
 
-            # Update parameters with decoupled weight decay
-            params[key] = params[key] - self.lr * (
-                m_hat / (np.sqrt(v_hat) + self.epsilon) + self.weight_decay * params[key]
-            )
+            # Update parameters in-place with decoupled weight decay
+            update = self.lr * (m_hat / (np.sqrt(v_hat) + self.epsilon) + self.weight_decay * params[key])
+            np.subtract(params[key], update, out=params[key])
 
     def __repr__(self):
         return f"AdamW(lr={self.lr}, beta1={self.beta1}, beta2={self.beta2}, wd={self.weight_decay})"
@@ -202,15 +212,17 @@ class RMSprop(Optimizer):
             if key not in self.v:
                 self.v[key] = np.zeros_like(params[key])
 
-            grad = grads[key]
+            grad = grads[key].copy()
             if self.weight_decay > 0:
                 grad = grad + self.weight_decay * params[key]
 
-            # Update moving average of squared gradients
-            self.v[key] = self.beta * self.v[key] + (1 - self.beta) * grad ** 2
+            # Update moving average of squared gradients in-place
+            np.multiply(self.v[key], self.beta, out=self.v[key])
+            np.add(self.v[key], (1 - self.beta) * grad ** 2, out=self.v[key])
 
-            # Update parameters
-            params[key] = params[key] - self.lr * grad / (np.sqrt(self.v[key]) + self.epsilon)
+            # Update parameters in-place
+            update = self.lr * grad / (np.sqrt(self.v[key]) + self.epsilon)
+            np.subtract(params[key], update, out=params[key])
 
     def __repr__(self):
         return f"RMSprop(lr={self.lr}, beta={self.beta})"

@@ -14,32 +14,6 @@ export * from './project-manager/index.js';
 export * from './codegen/index.js';
 export * from './plugins/index.js';
 export * from './generators/index.js';
+export * from './visualizer/index.js';
 export * from './assets/index.js';
-
-import { IntentParser, parseIntent } from './intent/index.js';
-import { ContextManager, createContext } from './context/index.js';
-import { ComponentEngine, createComponentEngine } from './component/index.js';
-import { DesignEngine, createDesignEngine } from './design/index.js';
-import { LogicEngine, createLogicEngine } from './logic/index.js';
-import { DeployEngine, createDeployEngine } from './deploy/index.js';
-import { ObservabilityEngine, createObservabilityEngine } from './observe/index.js';
-import { ProjectManager, createProjectManager } from './project-manager/index.js';
-
-export {
-  IntentParser,
-  parseIntent,
-  ContextManager,
-  createContext,
-  ComponentEngine,
-  createComponentEngine,
-  DesignEngine,
-  createDesignEngine,
-  LogicEngine,
-  createLogicEngine,
-  DeployEngine,
-  createDeployEngine,
-  ObservabilityEngine,
-  createObservabilityEngine,
-  ProjectManager,
-  createProjectManager,
-};
+export * from './export/index.js';

@@ -1,7 +1,14 @@
 export { PRNG } from './prng.js';
 export { generatePalette, generateGradient, type ColorPalette } from './color.js';
-export { generateTypeScale, type TypographySystem } from './typography.js';
+export { generateTypeScale } from './typography.js';
 export { generateLayout, type GeneratedLayout } from './layout.js';
+export { generateLayout as generateConstraintLayout, createElementsFromTypes, LayoutGenerator, type LayoutGeneratorConfig, type LayoutGeneratorResult, type ElementType } from './layout/index.js';
+export { GeneticAlgorithmEngine, generateOptimalLayout, quickLayout } from './layout/genetic-engine.js';
+export { ConstraintSolver, createAdjacencyConstraint, createAlignmentConstraint, createSpacingConstraint, createProportionConstraint, createHierarchyConstraint, createBalanceConstraint, createContainmentConstraint, createSymmetryConstraint } from './layout/constraint-solver.js';
+export { calculateFitness, scoreHierarchy, scoreBalance, scoreRhythm, scoreProportion, scoreAlignment, scoreSpacing, scoreWhitespace, scoreHarmony } from './layout/fitness.js';
+export { analyzeLayout, compareLayouts, gradeLayout, calculateElementMetrics } from './layout/scoring.js';
+export { MUTATION_OPERATORS, CROSSOVER_OPERATORS } from './layout/genetic-operators.js';
+export type { GridSystem, GridCell, GridDimensions, LayoutElement, GridPosition, ElementStyles, ConstraintType, ConstraintViolation, ConstraintSatisfactionResult, FitnessScore, GeneticLayout, GeneticAlgorithmConfig, GeneticResult, GenerationStats, MutationOperator, CrossoverOperator, LayoutScoreWeights, DEFAULT_SCORE_WEIGHTS, DEFAULT_GENETIC_CONFIG } from './layout/types.js';
 export { generateComponent, type GeneratedComponent } from './component.js';
 export { generateTemplate, type GeneratedTemplate, type TemplateCategory } from './template.js';
 export { NoiseGenerator } from './noise.js';

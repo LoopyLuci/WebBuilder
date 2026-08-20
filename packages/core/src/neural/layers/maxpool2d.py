@@ -33,25 +33,28 @@ class MaxPool2D(Layer):
         out_h = (height - ph) // self.stride + 1
         out_w = (width - pw) // self.stride + 1
 
-        # Reshape for pooling
-        x_reshaped = x.reshape(batch * channels, 1, height, width)
-        
-        # Create patches
-        shape = (batch * channels, 1, out_h, out_w, ph, pw)
-        strides = (x.strides[0], x.strides[1], 
-                   x.strides[2] * self.stride, x.strides[3] * self.stride,
-                   x.strides[2], x.strides[3])
-        
-        patches = np.lib.stride_tricks.as_strided(x_reshaped, shape=shape, strides=strides)
-        
-        # Find max values and their positions
-        patches_reshaped = patches.reshape(batch * channels, out_h, out_w, ph * pw)
-        max_vals = np.max(patches_reshaped, axis=-1)
-        self._cache['shape'] = x.shape
-        self._cache['patches_reshaped'] = patches_reshaped
-        self._cache['max_vals'] = max_vals
-        
-        out = max_vals.reshape(batch, channels, out_h, out_w)
+        # Initialize output and mask
+        out = np.zeros((batch, channels, out_h, out_w), dtype=np.float64)
+        self._cache = {'input_shape': x.shape, 'max_indices': []}
+
+        for i in range(out_h):
+            for j in range(out_w):
+                h_start = i * self.stride
+                h_end = h_start + ph
+                w_start = j * self.stride
+                w_end = w_start + pw
+                
+                # Extract the pooling region
+                region = x[:, :, h_start:h_end, w_start:w_end]
+                region_reshaped = region.reshape(batch, channels, -1)
+                
+                # Find max values and their indices
+                max_idx = np.argmax(region_reshaped, axis=-1)
+                max_vals = np.max(region_reshaped, axis=-1)
+                
+                out[:, :, i, j] = max_vals
+                self._cache['max_indices'].append((i, j, max_idx))
+
         return out
 
     def backward(self, dout: np.ndarray) -> np.ndarray:
@@ -64,34 +67,31 @@ class MaxPool2D(Layer):
         Returns:
             Gradient with respect to input of shape (batch, channels, height, width)
         """
-        batch, channels, height, width = self._cache['shape']
+        batch, channels, height, width = self._cache['input_shape']
         ph, pw = self.pool_size
         out_h, out_w = dout.shape[2], dout.shape[3]
         
-        # Create mask for max positions
-        patches_reshaped = self._cache['patches_reshaped']
-        max_indices = np.argmax(patches_reshaped, axis=-1)
+        dx = np.zeros((batch, channels, height, width), dtype=np.float64)
         
-        # Create one-hot encoding
-        mask = np.zeros_like(patches_reshaped)
-        batch_channels = batch * channels
-        bc_idx = np.arange(batch_channels)[:, None, None]
-        oh_idx = np.arange(out_h)[None, :, None]
-        ow_idx = np.arange(out_w)[None, None, :]
-        mask[bc_idx, oh_idx, ow_idx, max_indices] = 1
+        for idx, (i, j, max_idx) in enumerate(self._cache['max_indices']):
+            h_start = i * self.stride
+            h_end = h_start + ph
+            w_start = j * self.stride
+            w_end = w_start + pw
+            
+            # Get gradient for this position
+            dout_ij = dout[:, :, i, j]
+            
+            # Create one-hot mask for max positions
+            mask = np.zeros((batch, channels, ph * pw), dtype=np.float64)
+            b_idx = np.arange(batch)[:, None]
+            c_idx = np.arange(channels)[None, :]
+            mask[b_idx, c_idx, max_idx] = 1
+            
+            # Reshape mask and distribute gradient
+            mask = mask.reshape(batch, channels, ph, pw)
+            dx[:, :, h_start:h_end, w_start:w_end] += mask * dout_ij[:, :, None, None]
         
-        # Distribute gradient
-        dout_expanded = dout.reshape(batch * channels, out_h, out_w)[..., None]
-        dpatches = (mask * dout_expanded).reshape(batch * channels, 1, out_h, out_w, ph, pw)
-        
-        # Accumulate gradients
-        dx = np.zeros((batch * channels, 1, height, width), dtype=np.float64)
-        for y in range(ph):
-            for x_pos in range(pw):
-                dx[:, :, y:y + self.stride * out_h:self.stride, 
-                   x_pos:x_pos + self.stride * out_w:self.stride] += dpatches[:, :, :, :, y, x_pos]
-        
-        dx = dx.reshape(batch, channels, height, width)
         return dx
 
     def zero_grad(self):

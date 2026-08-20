@@ -2,979 +2,437 @@
 // Comprehensive type system for the entire platform
 
 export enum Platform {
-  WEB = 'web',
-  IOS = 'ios',
-  ANDROID = 'android',
-  DESKTOP = 'desktop',
-  CLI = 'cli',
-  PWA = 'pwa',
-  EXTENSION = 'extension',
-  H5 = 'h5',
-  MINI_PROGRAM = 'mini_program',
-  ELECTRON = 'electron',
-  TAURI = 'tauri',
-  CAPACITOR = 'capacitor',
-  REACT_NATIVE = 'react_native',
-  FLUTTER = 'flutter',
-  QT = 'qt',
-  GTK = 'gtk',
-  SWING = 'swing',
-  JAVAFX = 'javafx',
-  DOTNET = 'dotnet',
-  TAURI_PY = 'tauri_py',
-  WINFORMS = 'winforms',
-  WPF = 'wpf',
-  MAUI = 'maui',
-  AVALONIA = 'avalonia',
-  UNO = 'uno',
-  WEBASSEMBLY = 'webassembly',
+  WEB = 'web', IOS = 'ios', ANDROID = 'android', DESKTOP = 'desktop', CLI = 'cli', PWA = 'pwa',
+  EXTENSION = 'extension', H5 = 'h5', MINI_PROGRAM = 'mini_program', ELECTRON = 'electron', TAURI = 'tauri',
+  CAPACITOR = 'capacitor', REACT_NATIVE = 'react_native', FLUTTER = 'flutter', QT = 'qt', GTK = 'gtk',
+  SWING = 'swing', JAVAFX = 'javafx', DOTNET = 'dotnet', TAURI_PY = 'tauri_py', WINFORMS = 'winforms',
+  WPF = 'wpf', MAUI = 'maui', AVALONIA = 'avalonia', UNO = 'uno', WEBASSEMBLY = 'webassembly',
 }
 
 export enum ComponentCategory {
-  LAYOUT = 'layout',
-  CONTENT = 'content',
-  NAVIGATION = 'navigation',
-  FORM = 'form',
-  COMMERCE = 'commerce',
-  SOCIAL = 'social',
-  MEDIA = 'media',
-  DATA = 'data',
-  UTILITY = 'utility',
-  GAMING = 'gaming',
-  EDUCATION = 'education',
-  HEALTH = 'health',
-  FINANCE = 'finance',
-  TRAVEL = 'travel',
-  FOOD = 'food',
-  SPORTS = 'sports',
-  NEWS = 'news',
-  ENTERTAINMENT = 'entertainment',
-  BUSINESS = 'business',
-  PERSONAL = 'personal',
-  GOVERNMENT = 'government',
-  NONPROFIT = 'nonprofit',
-  ECOMMERCE = 'ecommerce',
-  SAAS = 'saas',
-  BLOG = 'blog',
-  PORTFOLIO = 'portfolio',
-  DOCUMENTATION = 'documentation',
-  DASHBOARD = 'dashboard',
-  LANDING = 'landing',
-  EMAIL = 'email',
-  CHAT = 'chat',
-  MAP = 'map',
-  MUSIC = 'music',
-  PHOTO = 'photo',
-  VIDEO = 'video',
-  DRAWING = 'drawing',
-  CALENDAR = 'calendar',
-  CALCULATOR = 'calculator',
-  TIMER = 'timer',
-  NOTES = 'notes',
-  TODO = 'todo',
-  WEATHER = 'weather',
-  MONITOR = 'monitor',
-  WIKIPEDIA = 'wikipedia',
-  FORUM = 'forum',
-  MAGAZINE = 'magazine',
-  STARTUP = 'startup',
-  AGENCY = 'agency',
-  RESTAURANT = 'restaurant',
-  REAL_ESTATE = 'realestate',
-  EDUCATION_SCHOOL = 'education_school',
-  HEALTH_MEDICAL = 'health_medical',
-  FINANCE_BANK = 'finance_bank',
-  ENTERTAINMENT_GAME = 'entertainment_game',
-  NONPROFIT_CHARITY = 'nonprofit_charity',
-  PERSONAL_RESUME = 'personal_resume',
-  GOVERNMENT_CITY = 'government_city',
-  CUSTOM = 'custom',
+  LAYOUT = 'layout', CONTENT = 'content', NAVIGATION = 'navigation', FORM = 'form', COMMERCE = 'commerce',
+  SOCIAL = 'social', MEDIA = 'media', DATA = 'data', UTILITY = 'utility', GAMING = 'gaming',
 }
 
 export enum AssetType {
-  ICON = 'icon',
-  IMAGE = 'image',
-  VIDEO = 'video',
-  AUDIO = 'audio',
-  FONT = 'font',
-  COLOR = 'color',
-  GRADIENT = 'gradient',
-  PATTERN = 'pattern',
-  ANIMATION = 'animation',
-  SPRITE = 'sprite',
-  TILESET = 'tileset',
-  CURSOR = 'cursor',
-  SOUND = 'sound',
-  MUSIC = 'music',
-  SFX = 'sfx',
-  MODEL_3D = 'model_3d',
-  SHADER = 'shader',
-  MATERIAL = 'material',
-  TEXTURE = 'texture',
-  TILE = 'tile',
-  UI = 'ui',
-  LOGO = 'logo',
-  ICON_SET = 'icon_set',
-  AVATAR = 'avatar',
-  BACKGROUND = 'background',
-  OVERLAY = 'overlay',
-  FRAME = 'frame',
-  BORDER = 'border',
-  SHADOW = 'shadow',
-  STICKER = 'sticker',
-  EMOJI = 'emoji',
-  BADGE = 'badge',
-  CERTIFICATE = 'certificate',
-  TROPHY = 'trophy',
-  MEDAL = 'medal',
-  RIBBON = 'ribbon',
-  BANNER = 'banner',
-  POSTER = 'poster',
-  FLYER = 'flyer',
-  BUSINESS_CARD = 'business_card',
-  INVOICE = 'invoice',
-  RECEIPT = 'receipt',
-  LABEL = 'label',
-  TAG = 'tag',
-  TICKET = 'ticket',
-  PASS = 'pass',
-  CARD = 'card',
-  CUSTOM = 'custom',
+  ICON = 'icon', IMAGE = 'image', VIDEO = 'video', AUDIO = 'audio', FONT = 'font', COLOR = 'color',
+  GRADIENT = 'gradient', PATTERN = 'pattern', ILLUSTRATION = 'illustration', ANIMATION = 'animation',
 }
 
 export enum ExportFormat {
-  HTML = 'html',
-  REACT = 'react',
-  VUE = 'vue',
-  SVELTE = 'svelte',
-  KOTLIN = 'kotlin',
-  SWIFT = 'swift',
-  FLUTTER = 'flutter',
-  QT = 'qt',
-  GTK = 'gtk',
-  SWING = 'swing',
-  JAVAFX = 'javafx',
-  DOTNET = 'dotnet',
-  TAURI = 'tauri',
-  ELECTRON = 'electron',
-  CAPACITOR = 'capacitor',
-  REACT_NATIVE = 'react_native',
-  WEBASSEMBLY = 'webassembly',
-  DOCKER = 'docker',
-  STATIC = 'static',
-  NEXTJS = 'nextjs',
-  NUXT = 'nuxt',
-  SVELTEKIT = 'sveltekit',
-  REMIX = 'remix',
-  ASTRO = 'astro',
-  GATSBY = 'gatsby',
-  HUGO = 'hugo',
-  JEKYLL = 'jekyll',
-  HEXO = 'hexo',
-  VITE = 'vite',
-  WEBPACK = 'webpack',
-  ROLLUP = 'rollup',
-  PARCEL = 'parcel',
-  ESBUILD = 'esbuild',
-  TURBOREPO = 'turborepo',
-  LERNA = 'lerna',
-  NX = 'nx',
-  RUSH = 'rush',
-  MOON = 'moon',
-  CUSTOM = 'custom',
+  HTML = 'html', REACT = 'react', VUE = 'vue', SVELTE = 'svelte', NEXT = 'next', NUXT = 'nuxt',
+  ANGULAR = 'angular', SOLID = 'solid', ASTRO = 'astro', STATIC = 'static', PWA = 'pwa',
 }
 
 export enum TemplateType {
-  LANDING = 'landing',
-  PORTFOLIO = 'portfolio',
-  ECOMMERCE = 'ecommerce',
-  BLOG = 'blog',
-  DASHBOARD = 'dashboard',
-  SOCIAL = 'social',
-  DOCUMENTATION = 'documentation',
-  SAAS = 'saas',
-  AGENCY = 'agency',
-  RESTAURANT = 'restaurant',
-  REAL_ESTATE = 'realestate',
-  TRAVEL = 'travel',
-  EDUCATION = 'education',
-  HEALTH = 'health',
-  FINANCE = 'finance',
-  ENTERTAINMENT = 'entertainment',
-  NONPROFIT = 'nonprofit',
-  PERSONAL = 'personal',
-  STARTUP = 'startup',
-  MAGAZINE = 'magazine',
-  FORUM = 'forum',
-  WIKIPEDIA = 'wikipedia',
-  MONITOR = 'monitor',
-  WEATHER = 'weather',
-  CALCULATOR = 'calculator',
-  TIMER = 'timer',
-  NOTES = 'notes',
-  TODO = 'todo',
-  CHAT = 'chat',
-  EMAIL = 'email',
-  MAP = 'map',
-  MUSIC = 'music',
-  PHOTO = 'photo',
-  VIDEO = 'video',
-  DRAWING = 'drawing',
-  GAME = 'game',
-  CUSTOM = 'custom',
+  SAAS = 'saas', PORTFOLIO = 'portfolio', ECOMMERCE = 'ecommerce', BLOG = 'blog', AGENCY = 'agency',
+  RESTAURANT = 'restaurant', STARTUP = 'startup', PERSONAL = 'personal', NONPROFIT = 'nonprofit',
 }
 
 export enum FieldType {
-  TEXT = 'text',
-  NUMBER = 'number',
-  BOOLEAN = 'boolean',
-  COLOR = 'color',
-  SELECT = 'select',
-  MULTI_SELECT = 'multi_select',
-  RANGE = 'range',
-  TEXTAREA = 'textarea',
-  RICH_TEXT = 'rich_text',
-  IMAGE = 'image',
-  VIDEO = 'video',
-  AUDIO = 'audio',
-  FILE = 'file',
-  DATE = 'date',
-  TIME = 'time',
-  DATETIME = 'datetime',
-  EMAIL = 'email',
-  URL = 'url',
-  TEL = 'tel',
-  PASSWORD = 'password',
-  CODE = 'code',
-  MARKDOWN = 'markdown',
-  JSON = 'json',
-  CSS = 'css',
-  HTML = 'html',
-  ICON = 'icon',
-  GRADIENT = 'gradient',
-  ANIMATION = 'animation',
-  COMPONENT = 'component',
-  COMPONENTS = 'components',
-  TEMPLATE = 'template',
-  STYLE = 'style',
-  LINK = 'link',
-  LINKS = 'links',
-  NAVIGATION = 'navigation',
-  SOCIAL_LINKS = 'social_links',
-  META = 'meta',
-  SEO = 'seo',
-  OG = 'og',
-  CUSTOM = 'custom',
+  TEXT = 'text', NUMBER = 'number', BOOLEAN = 'boolean', SELECT = 'select', MULTI_SELECT = 'multi_select',
+  DATE = 'date', TIME = 'time', COLOR = 'color', FILE = 'file', IMAGE = 'image', VIDEO = 'video',
 }
 
 export enum LogicType {
-  CLICK = 'click',
-  HOVER = 'hover',
-  FOCUS = 'focus',
-  BLUR = 'blur',
-  SUBMIT = 'submit',
-  CHANGE = 'change',
-  INPUT = 'input',
-  SCROLL = 'scroll',
-  RESIZE = 'resize',
-  LOAD = 'load',
-  UNLOAD = 'unload',
-  KEYBOARD = 'keyboard',
-  TIMER = 'timer',
-  INTERVAL = 'interval',
-  ANIMATION_END = 'animation_end',
-  TRANSITION_END = 'transition_end',
-  INTERSECTION = 'intersection',
-  MEDIA_QUERY = 'media_query',
-  GESTURE = 'gesture',
-  DRAG = 'drag',
-  DROP = 'drop',
-  CUSTOM = 'custom',
+  NAVIGATION = 'navigation', DATA = 'data', FORM = 'form', AUTH = 'auth', API = 'api', CUSTOM = 'custom',
 }
 
 export enum LogicAction {
-  NAVIGATE = 'navigate',
-  SCROLL = 'scroll',
-  TOGGLE = 'toggle',
-  SHOW = 'show',
-  HIDE = 'hide',
-  FADE_IN = 'fade_in',
-  FADE_OUT = 'fade_out',
-  SLIDE_IN = 'slide_in',
-  SLIDE_OUT = 'slide_out',
-  ANIMATE = 'animate',
-  SET_STATE = 'set_state',
-  SET_DATA = 'set_data',
-  FETCH = 'fetch',
-  SUBMIT = 'submit',
-  VALIDATE = 'validate',
-  CALCULATE = 'calculate',
-  TRANSFORM = 'transform',
-  FILTER = 'filter',
-  SORT = 'sort',
-  SEARCH = 'search',
-  SHARE = 'share',
-  DOWNLOAD = 'download',
-  COPY = 'copy',
-  PRINT = 'print',
-  ALERT = 'alert',
-  CONFIRM = 'confirm',
-  PROMPT = 'prompt',
-  TOAST = 'toast',
-  MODAL = 'modal',
-  DRAWER = 'drawer',
-  POPOVER = 'popover',
-  TOOLTIP = 'tooltip',
-  PLAY = 'play',
-  PAUSE = 'pause',
-  STOP = 'stop',
-  FULLSCREEN = 'fullscreen',
-  EXIT_FULLSCREEN = 'exit_fullscreen',
-  CUSTOM = 'custom',
+  REDIRECT = 'redirect', SUBMIT = 'submit', VALIDATE = 'validate', FETCH = 'fetch', STORE = 'store',
 }
 
 export enum AnimationType {
-  NONE = 'none',
-  FADE = 'fade',
-  SLIDE = 'slide',
-  ZOOM = 'zoom',
-  ROTATE = 'rotate',
-  FLIP = 'flip',
-  BOUNCE = 'bounce',
-  ELASTIC = 'elastic',
-  SPRING = 'spring',
-  KEYFRAMES = 'keyframes',
-  SCROLL = 'scroll',
-  HOVER = 'hover',
-  CLICK = 'click',
-  LOADING = 'loading',
-  PROGRESS = 'progress',
-  TRANSITION = 'transition',
-  MORPH = 'morph',
-  PARALLAX = 'parallax',
-  REVEAL = 'reveal',
-  STAGGER = 'stagger',
-  CUSTOM = 'custom',
+  ENTRANCE = 'entrance', EXIT = 'exit', ATTENTION = 'attention', TRANSITION = 'transition',
 }
 
 export enum LayoutType {
-  NONE = 'none',
-  FLEX_ROW = 'flex_row',
-  FLEX_COLUMN = 'flex_column',
-  GRID = 'grid',
-  ABSOLUTE = 'absolute',
-  FIXED = 'fixed',
-  STICKY = 'sticky',
-  FLOAT = 'float',
-  INLINE = 'inline',
-  BLOCK = 'block',
-  INLINE_BLOCK = 'inline_block',
-  INLINE_FLEX = 'inline_flex',
-  INLINE_GRID = 'inline_grid',
-  FLOW = 'flow',
-  TABLE = 'table',
-  TABLE_CELL = 'table_cell',
-  LIST_ITEM = 'list_item',
-  CONTENTS = 'contents',
-  INHERIT = 'inherit',
-  INITIAL = 'initial',
-  UNSET = 'unset',
-  CUSTOM = 'custom',
+  GRID = 'grid', FLEX = 'flex', STACK = 'stack', SPLIT = 'split', SIDEBAR = 'sidebar',
 }
 
 export enum ResponsiveStrategy {
-  MOBILE_FIRST = 'mobile_first',
-  DESKTOP_FIRST = 'desktop_first',
-  TABLET_FIRST = 'tablet_first',
-  NONE = 'none',
+  MOBILE_FIRST = 'mobile-first', DESKTOP_FIRST = 'desktop-first', ADAPTIVE = 'adaptive',
 }
 
 export enum BrowserSupport {
-  ALL = 'all',
-  MODERN = 'modern',
-  LEGACY = 'legacy',
-  CUSTOM = 'custom',
+  MODERN = 'modern', LEGACY = 'legacy', ALL = 'all',
 }
 
 export enum Language {
-  ENGLISH = 'en',
-  SPANISH = 'es',
-  FRENCH = 'fr',
-  GERMAN = 'de',
-  ITALIAN = 'it',
-  PORTUGUESE = 'pt',
-  DUTCH = 'nl',
-  RUSSIAN = 'ru',
-  CHINESE = 'zh',
-  JAPANESE = 'ja',
-  KOREAN = 'ko',
-  ARABIC = 'ar',
-  HINDI = 'hi',
-  TURKISH = 'tr',
-  POLISH = 'pl',
-  SWEDISH = 'sv',
-  DANISH = 'da',
-  NORWEGIAN = 'no',
-  FINNISH = 'fi',
-  GREEK = 'el',
-  CZECH = 'cs',
-  HUNGARIAN = 'hu',
-  ROMANIAN = 'ro',
-  BULGARIAN = 'bg',
-  CROATIAN = 'hr',
-  SERBIAN = 'sr',
-  SLOVAK = 'sk',
-  SLOVENE = 'sl',
-  ESTONIAN = 'et',
-  LATVIAN = 'lv',
-  LITHUANIAN = 'lt',
-  UKRAINIAN = 'uk',
-  HEBREW = 'he',
-  THAI = 'th',
-  VIETNAMESE = 'vi',
-  INDONESIAN = 'id',
-  MALAY = 'ms',
-  FILIPINO = 'tl',
-  SWAHILI = 'sw',
-  AMHARIC = 'am',
-  YORUBA = 'yo',
-  IGBO = 'ig',
-  ZULU = 'zu',
-  AFRIKAANS = 'af',
-  ALBANIAN = 'sq',
-  ARMENIAN = 'hy',
-  AZERBAIJANI = 'az',
-  BASQUE = 'eu',
-  BELARUSIAN = 'be',
-  BENGALI = 'bn',
-  BOSNIAN = 'bs',
-  CATALAN = 'ca',
-  CEBUANO = 'ceb',
-  CHICHEWA = 'ny',
-  CORSICAN = 'co',
-  CROATIAN_HR = 'hr_HR',
-  ESPERANTO = 'eo',
-  FRISIAN = 'fy',
-  GALICIAN = 'gl',
-  GEORGIAN = 'ka',
-  GUJARATI = 'gu',
-  HAITIAN_CREOLE = 'ht',
-  HAUSA = 'haw',
-  HAWAIIAN = 'haw',
-  HMONGS = 'hmn',
-  ICELANDIC = 'is',
-  ILOCANO = 'ilo',
-  JAVANESE = 'jw',
-  KANNADA = 'kn',
-  KAZAKH = 'kk',
-  KHMER = 'km',
-  KURDISH = 'ku',
-  KYRGYZ = 'ky',
-  LAO = 'lo',
-  LATIN = 'la',
-  LUXEMBOURGISH = 'lb',
-  MACEDONIAN = 'mk',
-  MALAGASY = 'mg',
-  MALAYALAM = 'ml',
-  MALTESE = 'mt',
-  MAORI = 'mi',
-  MARATHI = 'mr',
-  MONGOLIAN = 'mn',
-  MYANMAR = 'my',
-  NEPALI = 'ne',
-  PUNJABI = 'pa',
-  PASHTO = 'ps',
-  PERSIAN = 'fa',
-  SAMOAN = 'sm',
-  SCOTS_GAELIC = 'gd',
-  SESOTO = 'st',
-  SHONA = 'sn',
-  SINDHI = 'sd',
-  SINHALA = 'si',
-  SOMALI = 'so',
-  SUNDANESE = 'su',
-  TAJIK = 'tg',
-  TAMIL = 'ta',
-  TELUGU = 'te',
-  URDU = 'ur',
-  UZBEK = 'uz',
-  WELSH = 'cy',
-  XHOSA = 'xh',
-  YIDDISH = 'yi',
-  ZULU_ZU = 'zu_ZA',
-  CUSTOM = 'custom',
+  ENGLISH = 'en', SPANISH = 'es', FRENCH = 'fr', GERMAN = 'de', CHINESE = 'zh', JAPANESE = 'ja',
 }
 
 export enum Currency {
-  USD = 'usd',
-  EUR = 'eur',
-  GBP = 'gbp',
-  JPY = 'jpy',
-  AUD = 'aud',
-  CAD = 'cad',
-  CHF = 'chf',
-  CNY = 'cny',
-  SEK = 'sek',
-  NZD = 'nzd',
-  MXN = 'mxn',
-  SGD = 'sgd',
-  HKD = 'hkd',
-  NOK = 'nok',
-  TRY = 'try',
-  INR = 'inr',
-  BRL = 'brl',
-  ZAR = 'zar',
-  RUB = 'rub',
-  KRW = 'krw',
-  PLN = 'pln',
-  THB = 'thb',
-  IDR = 'idr',
-  HUF = 'huf',
-  CZK = 'czk',
-  ILS = 'ils',
-  CLP = 'clp',
-  PHP = 'php',
-  AED = 'aed',
-  COP = 'cop',
-  SAR = 'sar',
-  MYR = 'myr',
-  RON = 'ron',
-  CUSTOM = 'custom',
+  USD = 'usd', EUR = 'eur', GBP = 'gbp', JPY = 'jpy', CNY = 'cny',
 }
 
 export enum MeasurementUnit {
-  PX = 'px',
-  EM = 'em',
-  REM = 'rem',
-  PERCENT = '%',
-  VH = 'vh',
-  VW = 'vw',
-  VMIN = 'vmin',
-  VMAX = 'vmax',
-  CH = 'ch',
-  EX = 'ex',
-  CM = 'cm',
-  MM = 'mm',
-  IN = 'in',
-  PT = 'pt',
-  PC = 'pc',
-  FR = 'fr',
-  AUTO = 'auto',
-  FIT_CONTENT = 'fit_content',
-  MAX_CONTENT = 'max_content',
-  MIN_CONTENT = 'min_content',
-  CUSTOM = 'custom',
+  PIXEL = 'px', REM = 'rem', EM = 'em', PERCENT = '%', VIEWPORT = 'vh',
 }
 
 export enum TimeZone {
-  UTC = 'utc',
-  LOCAL = 'local',
-  CUSTOM = 'custom',
+  UTC = 'utc', EST = 'est', PST = 'pst', CET = 'cet',
 }
 
 export enum DateFormat {
-  YYYY_MM_DD = 'yyyy_mm_dd',
-  MM_DD_YYYY = 'mm_dd_yyyy',
-  DD_MM_YYYY = 'dd_mm_yyyy',
-  CUSTOM = 'custom',
+  ISO = 'iso', US = 'us', EU = 'eu',
 }
 
 export enum TimeFormat {
-  TWELVE_HOUR = '12h',
-  TWENTY_FOUR_HOUR = '24h',
-  CUSTOM = 'custom',
+  TWELVE = '12h', TWENTY_FOUR = '24h',
 }
 
 export enum ThemeMode {
-  LIGHT = 'light',
-  DARK = 'dark',
-  SYSTEM = 'system',
-  CUSTOM = 'custom',
+  LIGHT = 'light', DARK = 'dark', SYSTEM = 'system',
 }
 
 export enum Permission {
-  READ = 'read',
-  WRITE = 'write',
-  EXECUTE = 'execute',
-  DELETE = 'delete',
-  ADMIN = 'admin',
-  CUSTOM = 'custom',
+  READ = 'read', WRITE = 'write', DELETE = 'delete', ADMIN = 'admin',
 }
 
 export enum Role {
-  OWNER = 'owner',
-  ADMIN = 'admin',
-  EDITOR = 'editor',
-  VIEWER = 'viewer',
-  GUEST = 'guest',
-  CUSTOM = 'custom',
+  OWNER = 'owner', ADMIN = 'admin', EDITOR = 'editor', VIEWER = 'viewer',
 }
 
 export enum Status {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  PENDING = 'pending',
-  ARCHIVED = 'archived',
-  DELETED = 'deleted',
-  DRAFT = 'draft',
-  PUBLISHED = 'published',
-  CUSTOM = 'custom',
+  DRAFT = 'draft', PUBLISHED = 'published', ARCHIVED = 'archived',
 }
 
 export enum Priority {
-  LOW = 'low',
-  MEDIUM = 'medium',
-  HIGH = 'high',
-  URGENT = 'urgent',
-  CRITICAL = 'critical',
-  CUSTOM = 'custom',
+  LOW = 'low', MEDIUM = 'medium', HIGH = 'high',
 }
 
 export enum SortOrder {
-  ASC = 'asc',
-  DESC = 'desc',
-  RANDOM = 'random',
-  CUSTOM = 'custom',
+  ASC = 'asc', DESC = 'desc',
 }
 
 export enum FilterOperator {
-  EQUALS = 'equals',
-  NOT_EQUALS = 'not_equals',
-  CONTAINS = 'contains',
-  NOT_CONTAINS = 'not_contains',
-  STARTS_WITH = 'starts_with',
-  ENDS_WITH = 'ends_with',
-  GREATER_THAN = 'greater_than',
-  LESS_THAN = 'less_than',
-  GREATER_EQUAL = 'greater_equal',
-  LESS_EQUAL = 'less_equal',
-  BETWEEN = 'between',
-  IN = 'in',
-  NOT_IN = 'not_in',
-  IS_NULL = 'is_null',
-  IS_NOT_NULL = 'is_not_null',
-  CUSTOM = 'custom',
+  EQUALS = 'equals', NOT_EQUALS = 'not_equals', CONTAINS = 'contains', GT = 'gt', LT = 'lt',
 }
 
 export enum JoinOperator {
-  AND = 'and',
-  OR = 'or',
-  XOR = 'xor',
-  NOT = 'not',
-  CUSTOM = 'custom',
+  AND = 'and', OR = 'or',
 }
 
 export enum ComparisonOperator {
-  EQUAL = 'equal',
-  NOT_EQUAL = 'not_equal',
-  GREATER = 'greater',
-  LESS = 'less',
-  GREATER_EQUAL = 'greater_equal',
-  LESS_EQUAL = 'less_equal',
-  LIKE = 'like',
-  NOT_LIKE = 'not_like',
-  IN = 'in',
-  NOT_IN = 'not_in',
-  BETWEEN = 'between',
-  NOT_BETWEEN = 'not_between',
-  IS_NULL = 'is_null',
-  IS_NOT_NULL = 'is_not_null',
-  CUSTOM = 'custom',
+  EQUALS = 'equals', NOT_EQUALS = 'not_equals', GT = 'gt', GTE = 'gte', LT = 'lt', LTE = 'lte',
 }
 
 export enum HttpMethod {
-  GET = 'get',
-  POST = 'post',
-  PUT = 'put',
-  PATCH = 'patch',
-  DELETE = 'delete',
-  HEAD = 'head',
-  OPTIONS = 'options',
-  TRACE = 'trace',
-  CONNECT = 'connect',
-  CUSTOM = 'custom',
+  GET = 'get', POST = 'post', PUT = 'put', PATCH = 'patch', DELETE = 'delete',
 }
 
 export enum DataType {
-  STRING = 'string',
-  NUMBER = 'number',
-  BOOLEAN = 'boolean',
-  OBJECT = 'object',
-  ARRAY = 'array',
-  NULL = 'null',
-  UNDEFINED = 'undefined',
-  FUNCTION = 'function',
-  SYMBOL = 'symbol',
-  BIGINT = 'bigint',
-  DATE = 'date',
-  REGEXP = 'regexp',
-  MAP = 'map',
-  SET = 'set',
-  WEAK_MAP = 'weak_map',
-  WEAK_SET = 'weak_set',
-  ARRAY_BUFFER = 'array_buffer',
-  DATA_VIEW = 'data_view',
-  FLOAT32_ARRAY = 'float32_array',
-  FLOAT64_ARRAY = 'float64_array',
-  INT8_ARRAY = 'int8_array',
-  INT16_ARRAY = 'int16_array',
-  INT32_ARRAY = 'int32_array',
-  UINT8_ARRAY = 'uint8_array',
-  UINT8_CLAMPED_ARRAY = 'uint8_clamped_array',
-  UINT16_ARRAY = 'uint16_array',
-  UINT32_ARRAY = 'uint32_array',
-  BIGINT64_ARRAY = 'bigint64_array',
-  BIGUINT64_ARRAY = 'biguint64_array',
-  ERROR = 'error',
-  PROMISE = 'promise',
-  PROXY = 'proxy',
-  REFLECT = 'reflect',
-  INTL = 'intl',
-  WEB_ASSEMBLY = 'web_assembly',
-  CUSTOM = 'custom',
+  STRING = 'string', NUMBER = 'number', BOOLEAN = 'boolean', OBJECT = 'object', ARRAY = 'array',
 }
 
 export enum ValidationType {
-  REQUIRED = 'required',
-  MIN_LENGTH = 'min_length',
-  MAX_LENGTH = 'max_length',
-  MIN_VALUE = 'min_value',
-  MAX_VALUE = 'max_value',
-  PATTERN = 'pattern',
-  EMAIL = 'email',
-  URL = 'url',
-  PHONE = 'phone',
-  ZIP_CODE = 'zip_code',
-  CREDIT_CARD = 'credit_card',
-  SSN = 'ssn',
-  CUSTOM = 'custom',
+  REQUIRED = 'required', MIN_LENGTH = 'min_length', MAX_LENGTH = 'max_length', PATTERN = 'pattern',
+  EMAIL = 'email', URL = 'url', PHONE = 'phone',
 }
 
-export enum AnimationEasing {
-  LINEAR = 'linear',
-  EASE = 'ease',
-  EASE_IN = 'ease_in',
-  EASE_OUT = 'ease_out',
-  EASE_IN_OUT = 'ease_in_out',
-  BOUNCE_IN = 'bounce_in',
-  BOUNCE_OUT = 'bounce_out',
-  BOUNCE_IN_OUT = 'bounce_in_out',
-  ELASTIC_IN = 'elastic_in',
-  ELASTIC_OUT = 'elastic_out',
-  ELASTIC_IN_OUT = 'elastic_in_out',
-  SPRING = 'spring',
-  CUSTOM = 'custom',
+// Core interfaces
+export interface Intent {
+  id: string;
+  description: string;
+  goals: string[];
+  constraints: Constraint[];
+  references: Reference[];
+  audience: string;
+  purpose: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
-export enum AnimationDirection {
-  NORMAL = 'normal',
-  REVERSE = 'reverse',
-  ALTERNATE = 'alternate',
-  ALTERNATE_REVERSE = 'alternate_reverse',
-  CUSTOM = 'custom',
+export interface ParsedIntent {
+  intent: Intent;
+  spec: Partial<ProjectSpec>;
+  clarificationsNeeded: ClarificationQuestion[];
+  confidence: number;
 }
 
-export enum AnimationFill {
-  NONE = 'none',
-  FORWARDS = 'forwards',
-  BACKWARDS = 'backwards',
-  BOTH = 'both',
-  CUSTOM = 'custom',
+export interface ProjectSpec {
+  id: string;
+  version: string;
+  name: string;
+  description: string;
+  intent: Intent;
+  structure: PageMap;
+  design: DesignSystem;
+  functionality: FeatureSet;
+  deployment: DeploymentConfig;
+  metadata: ProjectMetadata;
 }
 
-export enum AnimationPlayState {
-  RUNNING = 'running',
-  PAUSED = 'paused',
-  CUSTOM = 'custom',
+export interface Constraint {
+  id: string;
+  type: string;
+  name: string;
+  description: string;
+  value: unknown;
+  priority: 'low' | 'medium' | 'high';
+  enabled: boolean;
 }
 
-export enum AnimationTiming {
-  START = 'start',
-  END = 'end',
-  CUSTOM = 'custom',
+export interface Reference {
+  id: string;
+  type: string;
+  url?: string;
+  description: string;
+  tags: string[];
 }
 
-export enum AnimationIterationCount {
-  INFINITE = 'infinite',
-  CUSTOM = 'custom',
+export interface ClarificationQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  required: boolean;
 }
 
-export enum AnimationDelay {
-  NONE = 'none',
-  CUSTOM = 'custom',
+export interface PageMap {
+  pages: Page[];
+  navigation: NavigationItem[];
+  globals: GlobalItem[];
 }
 
-export enum AnimationDuration {
-  FAST = 'fast',
-  FASTER = 'faster',
-  FASTEST = 'fastest',
-  SLOW = 'slow',
-  SLOWER = 'slower',
-  SLOWEST = 'slowest',
-  CUSTOM = 'custom',
+export interface Page {
+  id: string;
+  name: string;
+  path: string;
+  title: string;
+  description: string;
+  sections: Section[];
+  meta: PageMeta;
 }
 
-export enum AnimationFillMode {
-  NONE = 'none',
-  FORWARDS = 'forwards',
-  BACKWARDS = 'backwards',
-  BOTH = 'both',
-  AUTO = 'auto',
-  CUSTOM = 'custom',
+export interface PageMeta {
+  title: string;
+  description: string;
+  keywords: string[];
+  noIndex: boolean;
 }
 
-export enum AnimationName {
-  NONE = 'none',
-  FADE_IN = 'fade_in',
-  FADE_OUT = 'fade_out',
-  FADE_IN_UP = 'fade_in_up',
-  FADE_IN_DOWN = 'fade_in_down',
-  FADE_IN_LEFT = 'fade_in_left',
-  FADE_IN_RIGHT = 'fade_in_right',
-  FADE_OUT_UP = 'fade_out_up',
-  FADE_OUT_DOWN = 'fade_out_down',
-  FADE_OUT_LEFT = 'fade_out_left',
-  FADE_OUT_RIGHT = 'fade_out_right',
-  SLIDE_IN_UP = 'slide_in_up',
-  SLIDE_IN_DOWN = 'slide_in_down',
-  SLIDE_IN_LEFT = 'slide_in_left',
-  SLIDE_IN_RIGHT = 'slide_in_right',
-  SLIDE_OUT_UP = 'slide_out_up',
-  SLIDE_OUT_DOWN = 'slide_out_down',
-  SLIDE_OUT_LEFT = 'slide_out_left',
-  SLIDE_OUT_RIGHT = 'slide_out_right',
-  ZOOM_IN = 'zoom_in',
-  ZOOM_OUT = 'zoom_out',
-  ZOOM_IN_UP = 'zoom_in_up',
-  ZOOM_IN_DOWN = 'zoom_in_down',
-  ZOOM_IN_LEFT = 'zoom_in_left',
-  ZOOM_IN_RIGHT = 'zoom_in_right',
-  ZOOM_OUT_UP = 'zoom_out_up',
-  ZOOM_OUT_DOWN = 'zoom_out_down',
-  ZOOM_OUT_LEFT = 'zoom_out_left',
-  ZOOM_OUT_RIGHT = 'zoom_out_right',
-  ROTATE_IN = 'rotate_in',
-  ROTATE_OUT = 'rotate_out',
-  ROTATE_IN_UP_LEFT = 'rotate_in_up_left',
-  ROTATE_IN_UP_RIGHT = 'rotate_in_up_right',
-  ROTATE_IN_DOWN_LEFT = 'rotate_in_down_left',
-  ROTATE_IN_DOWN_RIGHT = 'rotate_in_down_right',
-  ROTATE_OUT_UP_LEFT = 'rotate_out_up_left',
-  ROTATE_OUT_UP_RIGHT = 'rotate_out_up_right',
-  ROTATE_OUT_DOWN_LEFT = 'rotate_out_down_left',
-  ROTATE_OUT_DOWN_RIGHT = 'rotate_out_down_right',
-  FLIP_IN_X = 'flip_in_x',
-  FLIP_IN_Y = 'flip_in_y',
-  FLIP_OUT_X = 'flip_out_x',
-  FLIP_OUT_Y = 'flip_out_y',
-  BOUNCE_IN = 'bounce_in',
-  BOUNCE_OUT = 'bounce_out',
-  BOUNCE_IN_UP = 'bounce_in_up',
-  BOUNCE_IN_DOWN = 'bounce_in_down',
-  BOUNCE_IN_LEFT = 'bounce_in_left',
-  BOUNCE_IN_RIGHT = 'bounce_in_right',
-  BOUNCE_OUT_UP = 'bounce_out_up',
-  BOUNCE_OUT_DOWN = 'bounce_out_down',
-  BOUNCE_OUT_LEFT = 'bounce_out_left',
-  BOUNCE_OUT_RIGHT = 'bounce_out_right',
-  ELASTIC_IN = 'elastic_in',
-  ELASTIC_OUT = 'elastic_out',
-  ELASTIC_IN_UP = 'elastic_in_up',
-  ELASTIC_IN_DOWN = 'elastic_in_down',
-  ELASTIC_IN_LEFT = 'elastic_in_left',
-  ELASTIC_IN_RIGHT = 'elastic_in_right',
-  ELASTIC_OUT_UP = 'elastic_out_up',
-  ELASTIC_OUT_DOWN = 'elastic_out_down',
-  ELASTIC_OUT_LEFT = 'elastic_out_left',
-  ELASTIC_OUT_RIGHT = 'elastic_out_right',
-  SPRING_IN = 'spring_in',
-  SPRING_OUT = 'spring_out',
-  SPRING_IN_UP = 'spring_in_up',
-  SPRING_IN_DOWN = 'spring_in_down',
-  SPRING_IN_LEFT = 'spring_in_left',
-  SPRING_IN_RIGHT = 'spring_in_right',
-  SPRING_OUT_UP = 'spring_out_up',
-  SPRING_OUT_DOWN = 'spring_out_down',
-  SPRING_OUT_LEFT = 'spring_out_left',
-  SPRING_OUT_RIGHT = 'spring_out_right',
-  CUSTOM = 'custom',
+export interface Section {
+  id: string;
+  name: string;
+  component: string;
+  props: Record<string, unknown>;
+  children: Section[];
+  responsive: ResponsiveConfig;
 }
 
-export enum AnimationProperty {
-  OPACITY = 'opacity',
-  TRANSLATE_X = 'translate_x',
-  TRANSLATE_Y = 'translate_y',
-  TRANSLATE_Z = 'translate_z',
-  SCALE = 'scale',
-  SCALE_X = 'scale_x',
-  SCALE_Y = 'scale_y',
-  SCALE_Z = 'scale_z',
-  ROTATE = 'rotate',
-  ROTATE_X = 'rotate_x',
-  ROTATE_Y = 'rotate_y',
-  ROTATE_Z = 'rotate_z',
-  SKEW_X = 'skew_x',
-  SKEW_Y = 'skew_y',
-  ORIGIN = 'origin',
-  PERSPECTIVE = 'perspective',
-  CUSTOM = 'custom',
+export interface NavigationItem {
+  id: string;
+  label: string;
+  path: string;
+  children: NavigationItem[];
+  external: boolean;
 }
 
-export enum AnimationFunction {
-  LINEAR = 'linear',
-  EASE = 'ease',
-  EASE_IN = 'ease_in',
-  EASE_OUT = 'ease_out',
-  EASE_IN_OUT = 'ease_in_out',
-  CUBIC_BEZIER = 'cubic_bezier',
-  STEPS = 'steps',
-  SPRING = 'spring',
-  CUSTOM = 'custom',
+export interface GlobalItem {
+  id: string;
+  name: string;
+  component: string;
+  position: string;
+  pages: string;
 }
 
-export enum AnimationKeyframe {
-  FROM = 'from',
-  TO = 'to',
-  PERCENT = 'percent',
-  CUSTOM = 'custom',
+export interface DesignSystem {
+  tokens: DesignTokens;
+  theme?: Theme;
+  themes?: Theme[];
+  typography: TypographySystem;
+  colors?: ColorSystem;
+  color?: ColorSystem;
+  spacing: SpacingSystem;
+  responsive?: Record<string, unknown>;
+  animations?: Record<string, unknown>;
+  elevation?: Record<string, unknown>;
+  motion?: Record<string, unknown>;
 }
 
-export enum AnimationTransform {
-  TRANSLATE = 'translate',
-  SCALE = 'scale',
-  ROTATE = 'rotate',
-  SKEW = 'skew',
-  MATRIX = 'matrix',
-  MATRIX3D = 'matrix3d',
-  PERSPECTIVE = 'perspective',
-  TRANSLATE3D = 'translate3d',
-  TRANSLATE_X = 'translate_x',
-  TRANSLATE_Y = 'translate_y',
-  TRANSLATE_Z = 'translate_z',
-  SCALE3D = 'scale3d',
-  SCALE_X = 'scale_x',
-  SCALE_Y = 'scale_y',
-  SCALE_Z = 'scale_z',
-  ROTATE3D = 'rotate3d',
-  ROTATE_X = 'rotate_x',
-  ROTATE_Y = 'rotate_y',
-  ROTATE_Z = 'rotate_z',
-  SKEW_X = 'skew_x',
-  SKEW_Y = 'skew_y',
-  CUSTOM = 'custom',
+export interface DesignTokens {
+  colors: Record<string, { value: string; type: string; description: string }>;
+  fonts: Record<string, { value: string; type: string; description: string }>;
+  spacing: Record<string, { value: string; type: string; description: string }>;
+  shadows: Record<string, { value: string; type: string; description: string }>;
+  radii: Record<string, { value: string; type: string; description: string }>;
+  sizing?: Record<string, { value: string; type: string; description: string }>;
+  borders?: Record<string, { value: string; type: string; description: string }>;
+  opacity?: Record<string, { value: string; type: string; description: string }>;
+  semantic?: Record<string, { value: string; description: string }>;
+  components?: Record<string, unknown>;
 }
 
-export enum AnimationTimingFunction {
-  LINEAR = 'linear',
-  EASE = 'ease',
-  EASE_IN = 'ease_in',
-  EASE_OUT = 'ease_out',
-  EASE_IN_OUT = 'ease_in_out',
-  STEP_START = 'step_start',
-  STEP_END = 'step_end',
-  CUBIC_BEZIER = 'cubic_bezier',
-  STEPS = 'steps',
-  FRAMES = 'frames',
-  SPRING = 'spring',
-  CUSTOM = 'custom',
+export interface Theme {
+  id?: string;
+  name?: string;
+  mode: 'light' | 'dark' | 'system';
+  tokens?: Record<string, unknown>;
+  default?: boolean;
+  colors?: Record<string, string>;
 }
+
+export interface TypographySystem {
+  fontFamily?: Record<string, string>;
+  fontFamilies?: Array<{ name: string; family: string; fallback: string[]; category: string }>;
+  fontSize: Record<string, string>;
+  fontWeights?: Record<string, number>;
+  fontWeight?: Record<string, number>;
+  lineHeights?: Record<string, number>;
+  lineHeight?: Record<string, number>;
+  letterSpacings?: Record<string, string>;
+  letterSpacing?: Record<string, string>;
+  textStyles?: Array<{ id: string; name: string; fontFamily: string; fontSize: string; fontWeight: number; lineHeight: number; letterSpacing: string }>;
+}
+
+export interface ColorSystem {
+  primary: string;
+  secondary: string;
+  accent: string;
+  background: string;
+  text: string;
+  success: string;
+  warning: string;
+  error: string;
+  white?: string;
+  gray?: string;
+  palette?: Record<string, Record<string, string>>;
+  gradients?: Array<unknown>;
+}
+
+export interface SpacingSystem {
+  xs: string;
+  sm: string;
+  md: string;
+  lg: string;
+  xl: string;
+  '2xl': string;
+  '3xl': string;
+  scale?: Record<string, string>;
+  grid?: { columns: number; gutter: string; margin: string; maxWidth: string };
+}
+
+export interface ResponsiveConfig {
+  mobile: string;
+  tablet: string;
+  desktop: string;
+  breakpoints?: Array<{ name: string; minWidth?: number; maxWidth?: number; baseFontSize: number }>;
+  defaultBreakpoint?: string;
+  strategy?: string;
+}
+
+export interface FeatureSet {
+  features: Feature[];
+  integrations?: Array<{ id: string; name: string; type: string; provider: string; config: Record<string, unknown>; enabled: boolean }>;
+  workflows?: Array<unknown>;
+  dataModels?: Array<unknown>;
+}
+
+export interface Feature {
+  id: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+  config?: Record<string, unknown>;
+  type?: string;
+  props?: Record<string, unknown>;
+  dependencies?: string[];
+}
+
+export interface DeploymentConfig {
+  target: DeploymentTarget;
+  environment: DeploymentEnvironment;
+  domain?: string;
+  ssl: boolean;
+  cdn: boolean;
+}
+
+export type DeploymentTarget = 'vercel' | 'netlify' | 'cloudflare' | 'aws' | 'gcp' | 'azure' | 'custom';
+export type DeploymentEnvironment = 'development' | 'staging' | 'production';
+
+export interface ProjectMetadata {
+  author: string;
+  version: string;
+  license: string;
+  repository?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type Framework = 'react' | 'vue' | 'svelte' | 'next' | 'nuxt' | 'angular' | 'solid' | 'astro';
+
+// Additional types for context, codegen, etc.
+export interface ProjectContext {
+  id: string;
+  spec: ProjectSpec;
+  history: ContextSnapshot[];
+  agents: AgentContext[];
+  resources: ExternalResource[];
+  preferences: UserPreferenceModel;
+  session: Session;
+  changes: ChangeSet[];
+  currentState: string;
+  agentMemory: Record<string, unknown>;
+  externalContext: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AgentContext {
+  id: string;
+  name: string;
+  role: string;
+  agentId: string;
+  contributions: AgentContribution[];
+  memory: Record<string, unknown>;
+}
+
+export interface AgentContribution {
+  id: string;
+  type: string;
+  description: string;
+  timestamp: string;
+}
+
+export interface ExternalResource {
+  id: string;
+  type: string;
+  url: string;
+  description: string;
+}
+
+export interface UserPreferenceModel {
+  style: string;
+  colors: string[];
+  fonts: string[];
+}
+
+export interface Session {
+  id: string;
+  startTime: string;
+  endTime?: string;
+}
+
+export interface ChangeSet {
+  id: string;
+  timestamp: string;
+  files: FileChange[];
+  author?: string;
+}
+
+export interface ContextSnapshot {
+  id: string;
+  timestamp: string;
+  spec: ProjectSpec;
+  changes: ChangeSet[];
+}
+
+export interface FileChange {
+  path: string;
+  content: string;
+  type: 'create' | 'update' | 'delete';
+}
+
+export type ID = string;
+export type Timestamp = string;

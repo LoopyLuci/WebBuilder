@@ -163,7 +163,7 @@ export interface PRNGLike {
   next(): number;
   range(min: number, max: number): number;
   int(min: number, max: number): number;
-  bool(probability?: number): number;
+  bool(probability?: number): boolean;
   pick<T>(arr: T[]): T;
   shuffle<T>(arr: T[]): T[];
 }
