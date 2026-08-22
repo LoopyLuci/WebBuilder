@@ -17,3 +17,5 @@ export * from './generators/index.js';
 export * from './visualizer/index.js';
 export * from './assets/index.js';
 export * from './export/index.js';
+export * from './api/index.js';
+export * from './agents/index.js';
